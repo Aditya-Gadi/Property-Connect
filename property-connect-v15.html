@@ -1,0 +1,1851 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>Property Connect</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;900&family=DM+Sans:wght@400;600;700;800&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%;overflow:hidden}
+body{background:#111008;display:flex;justify-content:center;font-family:'DM Sans',sans-serif;-webkit-font-smoothing:antialiased;touch-action:none;}
+#root{width:min(390px,100vw);height:100dvh;background:#1c1408;display:flex;flex-direction:column;position:relative;overflow:hidden;user-select:none;-webkit-user-select:none;}
+.bg{position:absolute;inset:0;pointer-events:none;z-index:0;background:radial-gradient(ellipse 220px 130px at 50% 0%,rgba(212,175,55,.13),transparent 70%),radial-gradient(ellipse 300px 180px at 50% 100%,rgba(100,60,20,.18),transparent 70%);}
+.bg-lines{position:absolute;inset:0;pointer-events:none;z-index:0;background-image:repeating-linear-gradient(90deg,rgba(212,175,55,.035) 0,rgba(212,175,55,.035) 1px,transparent 1px,transparent 65px),repeating-linear-gradient(0deg,rgba(212,175,55,.035) 0,rgba(212,175,55,.035) 1px,transparent 1px,transparent 65px);}
+
+/* ═══ HEADER ═══ */
+.header{position:relative;z-index:10;padding:6px 11px 7px;border-bottom:1px solid rgba(212,175,55,.12);flex-shrink:0}
+/* top bar: logo + action buttons */
+.header-top{display:flex;align-items:center;justify-content:space-between;margin-bottom:6px;gap:6px}
+.logo{font-family:'Playfair Display',serif;font-size:16px;font-weight:900;color:#D4AF37;letter-spacing:.8px;line-height:1;flex-shrink:0;cursor:pointer}
+.logo em{color:#E8C547;font-style:normal}
+.header-meta{display:flex;align-items:center;gap:4px;flex:1;justify-content:flex-end;min-width:0;overflow:hidden}
+.chip{border-radius:14px;padding:3px 8px;display:flex;align-items:center;gap:3px;font-weight:700;white-space:nowrap;cursor:default}
+.chip-wallet{background:rgba(52,199,89,.12);border:1px solid rgba(52,199,89,.32);color:#34C759;font-size:11px}
+.chip-wallet .chip-val{font-family:'Playfair Display',serif;font-size:12px}
+.chip-level{background:rgba(212,175,55,.1);border:1px solid rgba(212,175,55,.28);color:#D4AF37;font-size:10px;cursor:pointer;transition:background .18s}
+.chip-level:hover{background:rgba(212,175,55,.2)}
+.header-btns{display:none}
+.hdr-btn{background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.1);border-radius:8px;width:28px;height:28px;display:flex;align-items:center;justify-content:center;font-size:13px;cursor:pointer;transition:background .18s}
+.hdr-btn:hover{background:rgba(255,255,255,.15)}
+
+/* ── TWO-STAT CARDS ROW ── */
+.stat-row{display:flex;gap:7px}
+
+/* Bank card */
+.stat-bank{flex:1;background:rgba(212,175,55,.08);border:1px solid rgba(212,175,55,.2);border-radius:10px;padding:7px 10px;position:relative;overflow:hidden}
+.stat-bank::before{content:'';position:absolute;inset:0;background:linear-gradient(135deg,rgba(212,175,55,.06),transparent 60%);pointer-events:none}
+.sb-label{font-size:8px;font-weight:800;letter-spacing:1.5px;text-transform:uppercase;color:rgba(212,175,55,.55);margin-bottom:2px}
+.sb-nums{display:flex;align-items:baseline;gap:4px;margin-bottom:5px}
+.sb-cur{font-family:'Playfair Display',serif;font-size:22px;font-weight:900;color:#F5D060;line-height:1;text-shadow:0 0 14px rgba(245,208,96,.4);transition:all .3s}
+.sb-sep{font-size:10px;color:rgba(255,255,255,.2)}
+.sb-goal{font-size:11px;font-weight:700;color:rgba(255,255,255,.35)}
+.sb-bar-track{height:7px;background:rgba(0,0,0,.3);border-radius:4px;overflow:hidden;border:1px solid rgba(212,175,55,.15)}
+.sb-bar-fill{height:100%;border-radius:4px;background:linear-gradient(90deg,#8B6914,#D4AF37,#F5D060);box-shadow:0 0 8px rgba(212,175,55,.5);transition:width .55s cubic-bezier(.34,1.2,.64,1);position:relative}
+.sb-bar-fill::after{content:'';position:absolute;right:0;top:0;bottom:0;width:12px;background:linear-gradient(90deg,transparent,rgba(255,255,255,.35));animation:shimmer 1.5s infinite}
+@keyframes shimmer{0%,100%{opacity:.4}50%{opacity:1}}
+.sb-pct{font-size:8px;font-weight:800;color:rgba(212,175,55,.6);position:absolute;bottom:7px;right:10px}
+
+/* Moves card */
+.stat-moves{width:88px;flex-shrink:0;background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.1);border-radius:10px;padding:7px 10px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;position:relative}
+.sm-label{font-size:8px;font-weight:800;letter-spacing:1.5px;text-transform:uppercase;color:rgba(255,255,255,.35)}
+.sm-header{display:flex;align-items:center;justify-content:space-between;width:100%;gap:4px}
+.sm-edit{font-size:11px;cursor:pointer;opacity:.45;transition:opacity .18s;line-height:1;padding:1px 2px;border-radius:4px}
+.sm-edit:hover{opacity:1;background:rgba(212,175,55,.15)}
+.sm-num{font-family:'Playfair Display',serif;font-size:28px;font-weight:900;line-height:1;transition:color .3s}
+.sm-num.ok{color:#E8C547}.sm-num.warn{color:#FF9800}.sm-num.danger{color:#EF5350;text-shadow:0 0 12px rgba(239,83,80,.5)}
+.sm-bar-track{width:100%;height:5px;background:rgba(0,0,0,.3);border-radius:3px;overflow:hidden}
+.sm-bar-fill{height:100%;border-radius:3px;transition:width .38s,background .3s}
+.mfull{background:linear-gradient(90deg,#8B6914,#D4AF37)}
+.mwarn{background:linear-gradient(90deg,#E65100,#FF9800)}
+.mdanger{background:linear-gradient(90deg,#B71C1C,#EF5350);animation:bPulse .65s ease-in-out infinite}
+@keyframes bPulse{0%,100%{opacity:1}50%{opacity:.55}}
+/* toggle inside moves card */
+.sm-toggle{display:flex;align-items:center;gap:4px;margin-top:1px}
+.tgl-sw{width:26px;height:14px;background:rgba(255,255,255,.1);border-radius:7px;position:relative;cursor:pointer;border:1px solid rgba(255,255,255,.1);transition:background .22s;flex-shrink:0}
+.tgl-sw.on{background:rgba(212,175,55,.3);border-color:rgba(212,175,55,.5)}
+.tgl-knob{position:absolute;top:2px;left:2px;width:9px;height:9px;border-radius:50%;background:rgba(255,255,255,.35);transition:transform .22s cubic-bezier(.34,1.4,.64,1),background .22s}
+.tgl-sw.on .tgl-knob{transform:translateX(12px);background:#D4AF37}
+.tgl-sw-lbl{font-size:7px;font-weight:800;color:rgba(255,255,255,.3);text-transform:uppercase;letter-spacing:.5px}
+.tgl-sw-lbl.on{color:rgba(212,175,55,.7)}
+/* hide old toggle-row element */
+.toggle-row{display:none!important}
+@keyframes shakeM{0%,100%{transform:translateX(0)}20%{transform:translateX(-4px)}40%{transform:translateX(4px)}60%{transform:translateX(-3px)}80%{transform:translateX(3px)}}
+.shake{animation:shakeM .38s ease-in-out}
+
+/* ═══ CHAIN BAR ═══ */
+.chain-bar{position:relative;z-index:10;padding:3px 11px;display:flex;align-items:center;justify-content:space-between;min-height:24px;flex-shrink:0;border-top:1px solid rgba(255,255,255,.05)}
+.chain-info{display:flex;align-items:center;gap:5px;flex-wrap:wrap}
+.chain-dot{width:8px;height:8px;border-radius:50%;border:2px solid rgba(255,255,255,.3);flex-shrink:0}
+.chain-txt{font-size:10px;font-weight:700;color:rgba(255,255,255,.75)}
+.chain-need{color:#EF5350;font-size:8.5px}
+.chain-earn{font-family:'Playfair Display',serif;font-size:14px;color:#E8C547}
+.chain-mult{font-size:9.5px;font-weight:800;background:linear-gradient(135deg,#FF6B35,#FF9500);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+.chain-hint{font-size:9px;font-weight:500;color:rgba(255,255,255,.22)}
+.sets-made{font-size:9px;font-weight:700;color:rgba(255,255,255,.22);white-space:nowrap}
+
+/* ═══ BOOSTERS ═══ */
+.booster-bar{position:relative;z-index:10;padding:3px 7px;display:flex;align-items:center;gap:3px;border-top:1px solid rgba(255,255,255,.045);flex-shrink:0;min-height:40px}
+.b-section-lbl{font-size:5.5px;font-weight:800;letter-spacing:1.5px;text-transform:uppercase;color:rgba(255,255,255,.18);writing-mode:vertical-lr;transform:rotate(180deg);flex-shrink:0}
+.bbtn{flex:1;min-width:0;height:32px;border-radius:7px;border:none;cursor:pointer;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:0px;position:relative;transition:transform .13s,opacity .13s,box-shadow .13s;overflow:hidden}
+.bbtn:active{transform:scale(.93)}
+.bbtn.off{opacity:.32;cursor:not-allowed}
+.bbtn.active{box-shadow:0 0 0 2px #FFD700,0 0 10px rgba(255,215,0,.45)!important;transform:scale(1.05)}
+.bpg{background:linear-gradient(145deg,#0d2b17,#1a4728)!important}
+.bpg.pg-on{background:linear-gradient(145deg,#1a472a,#2e7d32)!important;box-shadow:0 0 0 1.5px #34C759!important;opacity:1!important}
+.b-ico{font-size:11px;line-height:1;position:relative;z-index:1}
+.b-nm{font-size:6px;font-weight:800;letter-spacing:.3px;text-transform:uppercase;position:relative;z-index:1;white-space:nowrap}
+.b-pr{font-size:6px;font-weight:700;position:relative;z-index:1;opacity:.82}
+.bsly  {background:linear-gradient(135deg,#1565C0,#1E88E5);box-shadow:0 2px 6px rgba(21,101,192,.38)}
+.bsly  .b-nm,.bsly  .b-pr{color:#90CAF9}
+.bfrc  {background:linear-gradient(135deg,#6A1B9A,#8E24AA);box-shadow:0 2px 6px rgba(106,27,154,.38)}
+.bfrc  .b-nm,.bfrc  .b-pr{color:#CE93D8}
+.bbrk  {background:linear-gradient(135deg,#B71C1C,#E53935);box-shadow:0 2px 6px rgba(183,28,28,.38)}
+.bbrk  .b-nm,.bbrk  .b-pr{color:#FFCDD2}
+.bresh {background:linear-gradient(135deg,#00695C,#00897B);box-shadow:0 2px 6px rgba(0,105,92,.38)}
+.bresh .b-nm,.bresh .b-pr{color:#B2DFDB}
+
+/* booster hint */
+.b-hint-row{position:relative;z-index:10;padding:2px 11px;min-height:16px;flex-shrink:0;display:flex;align-items:center;justify-content:space-between;gap:4px}
+.b-hint-txt{font-size:8px;font-weight:700;color:#FFD700;animation:blink 1s ease-in-out infinite}
+@keyframes blink{0%,100%{opacity:1}50%{opacity:.38}}
+.b-cancel{font-size:7.5px;font-weight:800;color:rgba(255,255,255,.32);cursor:pointer;padding:1px 5px;border:1px solid rgba(255,255,255,.1);border-radius:5px;text-transform:uppercase;flex-shrink:0}
+.b-cancel:hover{color:#EF5350;border-color:#EF5350}
+.db-go{font-size:7.5px;font-weight:800;color:#1c1408;background:linear-gradient(135deg,#D4AF37,#F5D060);border:none;border-radius:5px;padding:2px 7px;cursor:pointer;text-transform:uppercase;flex-shrink:0}
+.db-go:disabled{opacity:.32;cursor:not-allowed}
+
+/* ═══ GRID ═══ */
+.cell-gap{border-radius:8px;background:transparent;aspect-ratio:1;pointer-events:none;}
+.difficulty{display:inline-block;font-size:8px;font-weight:900;padding:1px 6px;border-radius:6px;text-transform:uppercase;letter-spacing:.5px;margin-bottom:3px}
+.diff-easy{background:rgba(52,199,89,.18);color:#34C759;border:1px solid rgba(52,199,89,.35)}
+.diff-med{background:rgba(255,204,0,.15);color:#FFC107;border:1px solid rgba(255,204,0,.3)}
+.diff-hard{background:rgba(255,100,0,.18);color:#FF6400;border:1px solid rgba(255,100,0,.35)}
+.diff-vhard{background:rgba(239,83,80,.18);color:#EF5350;border:1px solid rgba(239,83,80,.35)}
+/* ═══ GRID ═══ */
+.grid-outer{position:relative;z-index:10;padding:3px 7px;flex:1;min-height:0;touch-action:none;overflow-y:auto;overflow-x:hidden;display:flex;align-items:flex-start}
+.grid-wrap{position:relative;width:100%;height:100%}
+.grid{display:grid;grid-template-columns:repeat(6,1fr);grid-auto-rows:calc((min(390px,100vw) - 14px - 15px) / 6);gap:3px;width:100%}
+.svg-ov{position:absolute;inset:0;pointer-events:none;z-index:20;overflow:visible;width:100%;height:100%}
+
+/* ═══ CARDS ═══ */
+.card{border-radius:8px;position:relative;cursor:pointer;aspect-ratio:1;}
+.ci{width:100%;height:100%;border-radius:8px;overflow:hidden;position:relative;border:1.5px solid rgba(255,255,255,.11);box-shadow:0 2px 5px rgba(0,0,0,.52),inset 0 1px 0 rgba(255,255,255,.13);transition:box-shadow .13s,transform .13s;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:1px}
+.card.in-ch .ci{border-color:rgba(255,255,255,.65);box-shadow:0 0 0 2px #fff,0 0 9px rgba(255,255,255,.35);transform:scale(1.07)}
+.card.head  .ci{box-shadow:0 0 0 2px #FFD700,0 0 11px rgba(255,215,0,.55)}
+.card.inv   .ci{opacity:.26}
+.card.sp1   .ci{box-shadow:0 0 0 2px #42A5F5,0 0 11px rgba(66,165,245,.55)!important;transform:scale(1.09)!important}
+.card.dbsel .ci{box-shadow:0 0 0 2px #EF5350,0 0 9px rgba(239,83,80,.45)!important;transform:scale(1.06)!important}
+.card.s-pg  .ci{border-color:rgba(52,199,89,.45);box-shadow:0 2px 7px rgba(52,199,89,.25),inset 0 1px 0 rgba(255,255,255,.18)}
+.card.s-rnt .ci{border-color:rgba(255,210,10,.45);box-shadow:0 2px 7px rgba(255,210,10,.22),inset 0 1px 0 rgba(255,255,255,.18)}
+@keyframes cPop{0%{transform:scale(1.1);opacity:1}100%{transform:scale(0);opacity:0}}
+.card.pop{animation:cPop .2s ease-in forwards}
+@keyframes dIn{0%{transform:translateY(-28px) scale(.83);opacity:0}70%{transform:translateY(2px) scale(1.04)}100%{transform:translateY(0) scale(1);opacity:1}}
+.card.din{animation:dIn .32s cubic-bezier(.34,1.4,.64,1) forwards}
+.c-bg{position:absolute;inset:0}
+.c-sh{position:absolute;inset:0;background:linear-gradient(155deg,rgba(255,255,255,.17) 0%,transparent 50%);pointer-events:none}
+.c-pt{position:absolute;inset:0;background-image:repeating-linear-gradient(45deg,rgba(255,255,255,.028) 0,rgba(255,255,255,.028) 1px,transparent 1px,transparent 6px)}
+.c-ico{font-size:16px;position:relative;z-index:1;line-height:1;filter:drop-shadow(0 1px 3px rgba(0,0,0,.6))}
+.c-val{position:relative;z-index:1;font-size:10px;font-weight:900;color:rgba(255,255,255,.95);text-shadow:0 1px 3px rgba(0,0,0,.7);letter-spacing:.1px;line-height:1}
+.c-val.dk{color:rgba(0,0,0,.72);text-shadow:none}
+.c-sub{position:relative;z-index:1;font-size:7px;font-weight:900;text-transform:uppercase;letter-spacing:.4px;line-height:1}
+.cn{position:absolute;top:-5px;left:-5px;background:#FFD700;color:#000;font-size:8px;font-weight:900;width:14px;height:14px;border-radius:50%;display:flex;align-items:center;justify-content:center;border:1.5px solid #000;z-index:30;box-shadow:0 1px 4px rgba(0,0,0,.5)}
+
+/* ═══ HINT HIGHLIGHT ═══ */
+@keyframes hintPulse{
+  0%,100%{box-shadow:0 0 0 2px rgba(255,230,50,.6),0 0 12px rgba(255,230,50,.35);transform:scale(1)}
+  50%{box-shadow:0 0 0 3px rgba(255,230,50,.95),0 0 20px rgba(255,230,50,.6);transform:scale(1.08)}
+}
+.card.hint .ci{
+  border-color:rgba(255,230,50,.9)!important;
+  animation:hintPulse 0.9s ease-in-out infinite;
+}
+.hint-label{position:absolute;bottom:100%;left:50%;transform:translateX(-50%);margin-bottom:4px;background:rgba(255,230,50,.92);color:#1c1408;font-size:8px;font-weight:900;padding:2px 7px;border-radius:8px;white-space:nowrap;pointer-events:none;z-index:40;letter-spacing:.5px;box-shadow:0 2px 8px rgba(0,0,0,.4);animation:hintLabelIn .25s ease-out}
+@keyframes hintLabelIn{from{opacity:0;transform:translateX(-50%) translateY(4px)}to{opacity:1;transform:translateX(-50%) translateY(0)}}
+
+/* ═══ BOTTOM STRIP ═══ */
+.bot-strip{position:relative;z-index:10;padding:3px 11px 5px;display:flex;align-items:center;justify-content:space-between;border-top:1px solid rgba(212,175,55,.09);flex-shrink:0}
+.leg{display:flex;gap:3px;flex-wrap:wrap}
+.lpill{display:flex;align-items:center;gap:2px;background:rgba(255,255,255,.035);border-radius:7px;padding:1.5px 4px}
+.ldot{width:6px;height:6px;border-radius:2px;flex-shrink:0}
+.lval{font-size:7px;font-weight:700;color:rgba(255,255,255,.28)}
+.sets-ct{text-align:right}
+.sets-n{font-family:'Playfair Display',serif;font-size:14px;color:#D4AF37;line-height:1}
+.sets-l{font-size:7px;font-weight:700;color:rgba(255,255,255,.22);letter-spacing:1px;text-transform:uppercase}
+
+/* ═══ FLOAT POPS ═══ */
+.fpop{position:absolute;font-family:'Playfair Display',serif;font-size:13px;font-weight:700;color:#F5D060;text-shadow:0 0 7px rgba(245,208,96,.75);pointer-events:none;z-index:50;transform:translate(-50%,-50%);animation:fUp .9s ease-out forwards;white-space:nowrap}
+.fpop.grn{color:#34C759;text-shadow:0 0 7px rgba(52,199,89,.75)}
+.fpop.blu{color:#64B5F6;text-shadow:0 0 7px rgba(100,181,246,.75)}
+.fpop.red{color:#EF5350;text-shadow:0 0 7px rgba(239,83,80,.75)}
+@keyframes fUp{0%{opacity:1;transform:translate(-50%,-50%) scale(1)}100%{opacity:0;transform:translate(-50%,-115%) scale(1.18)}}
+
+/* ═══ TOAST ═══ */
+.tw{position:absolute;left:50%;top:40%;transform:translate(-50%,-50%);pointer-events:none;z-index:100;display:flex;flex-direction:column;align-items:center;gap:3px}
+.toast{font-family:'Playfair Display',serif;font-size:21px;font-weight:900;color:#1c1408;background:linear-gradient(135deg,#F5D060,#D4AF37);padding:5px 15px;border-radius:8px;box-shadow:0 5px 16px rgba(0,0,0,.55),0 0 0 2px rgba(255,255,255,.18);animation:tIn .3s cubic-bezier(.34,1.56,.64,1),tOut .28s 1.05s ease-in forwards;white-space:nowrap;text-align:center}
+.toast.gt{background:linear-gradient(135deg,#1a472a,#34C759);color:#fff}
+.toast.bt{background:linear-gradient(135deg,#1565C0,#42A5F5);color:#fff}
+.toast.tt{background:linear-gradient(135deg,#00695C,#00BFA5);color:#fff}
+.tsub{font-size:10px;font-weight:700;color:rgba(255,255,255,.6);animation:tIn .3s .04s cubic-bezier(.34,1.56,.64,1) both,tOut .28s 1.05s ease-in forwards}
+@keyframes tIn{from{opacity:0;transform:scale(.58) translateY(8px)}to{opacity:1;transform:scale(1) translateY(0)}}
+@keyframes tOut{from{opacity:1}to{opacity:0}}
+
+/* ═══ SVG LINES ═══ */
+.l1{stroke:rgba(255,255,255,.5)}.l15{stroke:#FF9800}.l2{stroke:#E040FB}.l3{stroke:#FFD700;filter:drop-shadow(0 0 4px #FFD700)}
+
+/* ═══ OVERLAY (shared) ═══ */
+.ov{position:absolute;inset:0;background:rgba(8,5,0,.94);display:flex;flex-direction:column;align-items:center;justify-content:flex-start;gap:9px;z-index:200;backdrop-filter:blur(8px);padding:16px 16px 20px;text-align:center;overflow-y:auto}
+.ov-deco{font-size:40px;line-height:1;animation:pulse 2s ease-in-out infinite;flex-shrink:0}
+@keyframes pulse{0%,100%{transform:scale(1)}50%{transform:scale(1.09)}}
+.ov-title{font-family:'Playfair Display',serif;font-size:32px;font-weight:900;color:#D4AF37;text-shadow:0 0 26px rgba(212,175,55,.45);line-height:1.1;flex-shrink:0}
+.ov-title.red{color:#EF5350;text-shadow:0 0 26px rgba(239,83,80,.45)}
+.ov-sub{font-size:11.5px;font-weight:500;color:rgba(255,255,255,.48);line-height:1.8;flex-shrink:0}
+.ov-sub strong{color:#D4AF37;font-weight:700}
+.ov-sub .grn{color:#34C759;font-weight:700}.ov-sub .red{color:#EF5350;font-weight:700}
+.rule-grid{display:grid;grid-template-columns:1fr 1fr;gap:5px;width:100%;flex-shrink:0}
+.rc{background:rgba(212,175,55,.055);border:1px solid rgba(212,175,55,.13);border-radius:7px;padding:7px}
+.ri{font-size:14px;margin-bottom:2px}.rt{font-size:8px;font-weight:800;color:#D4AF37;letter-spacing:.4px;text-transform:uppercase;margin-bottom:1px}.rd{font-size:7.5px;color:rgba(255,255,255,.35);line-height:1.4}
+.wallet-note{font-size:10px;color:rgba(52,199,89,.72);font-weight:600;border:1px solid rgba(52,199,89,.18);border-radius:7px;padding:5px 10px;background:rgba(52,199,89,.055);width:100%;text-align:center}
+.btn-p{background:linear-gradient(135deg,#D4AF37,#F5D060);color:#1c1408;font-family:'Playfair Display',serif;font-size:15px;font-weight:700;border:none;border-radius:50px;padding:10px 36px;cursor:pointer;box-shadow:0 4px 14px rgba(212,175,55,.38);transition:transform .13s;letter-spacing:.8px;margin-top:1px;flex-shrink:0}
+.btn-p:hover{transform:scale(1.04)}.btn-p:active{transform:scale(.96)}
+.btn-ghost{background:transparent;color:rgba(255,255,255,.38);font-size:12px;font-weight:600;border:1px solid rgba(255,255,255,.13);border-radius:50px;padding:7px 22px;cursor:pointer;transition:all .15s;flex-shrink:0}
+.btn-ghost:hover{border-color:rgba(255,255,255,.3);color:rgba(255,255,255,.65)}
+
+/* ═══ LEVEL SELECT ═══ */
+.lvl-grid{display:grid;grid-template-columns:1fr 1fr;gap:6px;width:100%;flex-shrink:0}
+.lvl-card{background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.09);border-radius:9px;padding:9px 8px;cursor:pointer;transition:all .18s;position:relative;text-align:left}
+.lvl-card:hover{background:rgba(212,175,55,.1);border-color:rgba(212,175,55,.35)}
+.lvl-card.current{border-color:#D4AF37;background:rgba(212,175,55,.12);box-shadow:0 0 10px rgba(212,175,55,.2)}
+.lvl-num{font-family:'Playfair Display',serif;font-size:22px;font-weight:900;color:#D4AF37;line-height:1;margin-bottom:2px}
+.lvl-name{font-size:9px;font-weight:700;color:rgba(255,255,255,.55);letter-spacing:.3px;text-transform:uppercase;margin-bottom:4px;line-height:1.2}
+.lvl-goal{font-size:10px;font-weight:800;color:#E8C547}
+.lvl-moves{font-size:8px;color:rgba(255,255,255,.32);margin-top:1px}
+.lvl-badge-done{position:absolute;top:6px;right:6px;font-size:12px}
+
+/* ═══ EDIT MOVES PANEL ═══ */
+.edit-panel{position:absolute;inset:0;background:rgba(8,5,0,.96);z-index:250;display:flex;flex-direction:column;gap:0;overflow:hidden}
+.ep-header{padding:12px 14px 10px;border-bottom:1px solid rgba(212,175,55,.12);display:flex;align-items:center;justify-content:space-between;flex-shrink:0}
+.ep-title{font-family:'Playfair Display',serif;font-size:18px;color:#D4AF37;font-weight:900}
+.ep-close{background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.1);border-radius:7px;width:28px;height:28px;display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:14px;color:rgba(255,255,255,.5)}
+.ep-body{flex:1;overflow-y:auto;padding:10px 14px;display:flex;flex-direction:column;gap:7px}
+.ep-row{display:flex;align-items:center;gap:8px;background:rgba(255,255,255,.04);border-radius:8px;padding:8px 10px;border:1px solid rgba(255,255,255,.07)}
+.ep-lvl-name{flex:1;min-width:0}
+.ep-n{font-size:10px;font-weight:800;color:#D4AF37}
+.ep-sub{font-size:8px;color:rgba(255,255,255,.32)}
+.ep-ctrl{display:flex;align-items:center;gap:6px;flex-shrink:0}
+.ep-minus,.ep-plus{background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.12);border-radius:5px;width:22px;height:22px;display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:14px;font-weight:900;color:rgba(255,255,255,.6);transition:background .15s;line-height:1;user-select:none}
+.ep-minus:hover,.ep-plus:hover{background:rgba(212,175,55,.2);color:#D4AF37}
+.ep-val{font-family:'Playfair Display',serif;font-size:16px;font-weight:700;color:#E8C547;min-width:22px;text-align:center}
+.ep-footer{padding:10px 14px;border-top:1px solid rgba(212,175,55,.1);flex-shrink:0}
+
+
+/* ═══ SIMULATOR ═══ */
+.sim-bar{position:relative;z-index:15;padding:4px 10px;display:flex;align-items:center;gap:6px;background:rgba(100,60,220,.12);border-top:1px solid rgba(120,80,255,.2);border-bottom:1px solid rgba(120,80,255,.2);flex-shrink:0}
+.sim-bar.hidden{display:none}
+.sim-btn{height:26px;border-radius:7px;border:none;cursor:pointer;font-size:10px;font-weight:800;padding:0 10px;transition:all .15s;letter-spacing:.3px;text-transform:uppercase;white-space:nowrap}
+.sim-btn.start{background:linear-gradient(135deg,#7C3AED,#A78BFA);color:#fff;box-shadow:0 2px 8px rgba(124,58,237,.35)}
+.sim-btn.start:hover{background:linear-gradient(135deg,#6D28D9,#8B5CF6);transform:scale(1.04)}
+.sim-btn.pause{background:rgba(255,200,0,.18);border:1px solid rgba(255,200,0,.35);color:#FFC107}
+.sim-btn.stop{background:rgba(239,83,80,.14);border:1px solid rgba(239,83,80,.3);color:#EF5350}
+.sim-btn.take{background:linear-gradient(135deg,#059669,#34D399);color:#fff;box-shadow:0 2px 8px rgba(5,150,105,.35)}
+.sim-btn:disabled{opacity:.3;cursor:not-allowed;transform:none!important}
+.sim-speed{display:flex;align-items:center;gap:4px;margin-left:auto}
+.sim-speed-lbl{font-size:7px;font-weight:800;text-transform:uppercase;letter-spacing:.8px;color:rgba(255,255,255,.3)}
+.sim-speed input[type=range]{width:60px;accent-color:#A78BFA;cursor:pointer}
+.sim-badge{font-size:8px;font-weight:800;background:rgba(167,139,250,.18);border:1px solid rgba(167,139,250,.3);color:#A78BFA;border-radius:6px;padding:1px 6px;white-space:nowrap}
+.sim-live-chain{position:absolute;inset:0;pointer-events:none;z-index:22}
+.sim-move-banner{position:absolute;top:6px;left:50%;transform:translateX(-50%);z-index:60;background:rgba(124,58,237,.9);color:#fff;font-size:10px;font-weight:800;padding:3px 12px;border-radius:20px;pointer-events:none;white-space:nowrap;box-shadow:0 2px 8px rgba(0,0,0,.4);letter-spacing:.3px;animation:simBannerIn .2s ease-out}
+@keyframes simBannerIn{from{opacity:0;transform:translateX(-50%) scale(.8)}to{opacity:1;transform:translateX(-50%) scale(1)}}
+.sim-card-hi .ci{box-shadow:0 0 0 2.5px #A78BFA,0 0 14px rgba(167,139,250,.6)!important;transform:scale(1.09)!important}
+
+/* sound toggle */
+.snd-btn{background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.1);border-radius:8px;padding:3px 7px;font-size:11px;cursor:pointer;transition:background .18s;display:flex;align-items:center;gap:3px;color:rgba(255,255,255,.55)}
+.snd-btn:hover{background:rgba(255,255,255,.14)}
+.snd-btn.on{background:rgba(212,175,55,.15);border-color:rgba(212,175,55,.3);color:#D4AF37}
+</style>
+</head>
+<body>
+<div id="root">
+  <div class="bg"></div><div class="bg-lines"></div>
+
+  <!-- HEADER -->
+  <div class="header">
+    <!-- top bar: logo + chips + action buttons -->
+    <div class="header-top">
+      <div class="logo" onclick="showLevelSelect()">Property<em>Connect</em></div>
+      <div class="header-meta">
+        <div class="chip chip-wallet">💳 <span class="chip-val" id="wallet-val">$0</span></div>
+        <div class="chip chip-level" id="chip-level" onclick="showLevelSelect()">Lvl 1</div>
+        <div class="hdr-btn snd-btn on" id="snd-btn" title="Sound" onclick="toggleSound()">🔊</div>
+        <div class="hdr-btn" title="Restart level" onclick="restartLevel()">🔁</div>
+      </div>
+    </div>
+    <!-- bank + moves side by side -->
+    <div class="stat-row">
+      <!-- BANK GOAL CARD -->
+      <div class="stat-bank">
+        <div class="sb-label">🏦 Bank Goal</div>
+        <div class="sb-nums">
+          <span class="sb-cur" id="bank-cur">$0</span>
+          <span class="sb-sep">/</span>
+          <span class="sb-goal" id="bank-goal">$3K</span>
+        </div>
+        <div class="sb-bar-track"><div class="sb-bar-fill" id="bank-fill" style="width:0%"></div></div>
+        <span class="sb-pct" id="bank-pct">0%</span>
+      </div>
+      <!-- MOVES CARD -->
+      <div class="stat-moves" id="moves-wrap">
+        <div class="sm-header">
+          <div class="sm-label">Moves</div>
+          <div class="sm-edit" onclick="showEditPanel()" title="Edit moves per level">✏️</div>
+        </div>
+        <div class="sm-num ok" id="moves-num">20</div>
+        <div class="sm-bar-track"><div class="sm-bar-fill mfull" id="moves-bar" style="width:100%"></div></div>
+        <div class="sm-toggle">
+          <div class="tgl-sw on" id="tgl-sw"><div class="tgl-knob"></div></div>
+          <span class="tgl-sw-lbl on" id="tgl-lbl">Limit</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- TOGGLE ROW (hidden — toggle now lives inside moves card) -->
+  <div class="toggle-row" style="display:none">
+    <span class="tgl-lbl on" id="tgl-lbl-old"></span>
+    <div class="tgl-sw" id="tgl-sw-old"></div>
+    <div class="moves-wrap" id="moves-wrap-old"></div>
+  </div>
+
+  <!-- CHAIN BAR -->
+  <div class="chain-bar">
+    <div id="chain-wrap"><span class="chain-hint">Draw to connect same-color cards</span></div>
+    <div class="sets-made" id="sets-made">0 sets</div>
+  </div>
+
+  <!-- BOOSTERS -->
+  <div class="booster-bar">
+    <span class="b-section-lbl">Boost</span>
+    <button class="bbtn bsly"  id="b-sly"   onclick="activateBooster('sly')"><span class="b-ico">🔄</span><span class="b-nm">Sly Deal</span><span class="b-pr">$300</span></button>
+    <button class="bbtn bfrc"  id="b-frc"   onclick="activateBooster('forced')"><span class="b-ico">🗑️</span><span class="b-nm">Forced</span><span class="b-pr">$1K</span></button>
+    <button class="bbtn bbrk"  id="b-brk"   onclick="activateBooster('break')"><span class="b-ico">⚡</span><span class="b-nm">Deal Brk</span><span class="b-pr">$800</span></button>
+    <button class="bbtn bresh" id="b-resh"  onclick="activateBooster('reshuffle')"><span class="b-ico">🔀</span><span class="b-nm">Reshuffle</span><span class="b-pr">$600</span></button>
+    <button class="bbtn bpg off" id="b-pg" onclick="togglePassGo()" title="Toggle Pass Go cards"><span class="b-ico">🚀</span><span class="b-nm">Pass Go</span><span class="b-pr" id="pg-pr">OFF</span></button>
+  </div>
+
+  <!-- BOOSTER HINT -->
+  <div class="b-hint-row" id="b-hint-row" style="display:none">
+    <span class="b-hint-txt" id="b-hint-txt"></span>
+    <div style="display:flex;gap:4px;align-items:center;flex-shrink:0">
+      <button class="db-go" id="db-go" style="display:none" onclick="confirmDealBreaker()">Connect!</button>
+      <span class="b-cancel" onclick="cancelBooster()">✕</span>
+    </div>
+  </div>
+
+  <!-- SIMULATOR BAR -->
+  <div class="sim-bar hidden" id="sim-bar">
+    <button class="sim-btn start" id="sim-start-btn" onclick="simStart()">▶ Simulate</button>
+    <button class="sim-btn pause hidden" id="sim-pause-btn" onclick="simTogglePause()">⏸ Pause</button>
+    <button class="sim-btn stop hidden"  id="sim-stop-btn"  onclick="simStop()">■ Stop</button>
+    <button class="sim-btn take hidden"  id="sim-take-btn"  onclick="simTakeOver()">🎮 Take Over</button>
+    <span class="sim-badge" id="sim-status">AI ready</span>
+    <div class="sim-speed">
+      <span class="sim-speed-lbl">Speed</span>
+      <input type="range" id="sim-speed" min="1" max="5" value="3" oninput="simSpeedChanged()">
+      <span class="sim-badge" id="sim-speed-lbl">Normal</span>
+    </div>
+  </div>
+
+  <!-- GRID -->
+  <div class="grid-outer">
+    <div class="grid-wrap" id="grid-wrap">
+      <svg class="svg-ov" id="svg-ov"></svg>
+      <div class="grid" id="grid"></div>
+    </div>
+  </div>
+
+  <!-- BOTTOM -->
+  <div class="bot-strip">
+    <div class="leg" id="legend"></div>
+    <div class="sets-ct">
+      <div class="sets-n" id="sets-n">0</div>
+      <div class="sets-l">SETS MADE</div>
+    </div>
+  </div>
+
+  <!-- OVERLAY (start/win/lose/levelselect) -->
+  <div class="ov" id="ov" style="display:none"></div>
+
+  <!-- EDIT MOVES PANEL -->
+  <div class="edit-panel" id="edit-panel" style="display:none">
+    <div class="ep-header">
+      <span class="ep-title">✏️ Edit Moves Per Level</span>
+      <div class="ep-close" onclick="closeEditPanel()">✕</div>
+    </div>
+    <div class="ep-body" id="ep-body"></div>
+    <div class="ep-footer">
+      <button class="btn-p" style="width:100%;font-size:13px;padding:9px" onclick="closeEditPanel()">Save & Close</button>
+    </div>
+  </div>
+</div>
+
+<script>
+// ══════════════════════════════════════════════════════════════════
+// CONFIG
+// ══════════════════════════════════════════════════════════════════
+const COLS=6,ROWS=8,MIN_CHAIN=3;
+const BCOSTS={sly:300,forced:1000,break:800,reshuffle:600};
+
+const COLORS={
+  brown:   {label:"Brown",  bg:"#5D3A1A",mid:"#8B5E3C",text:"#fff",values:[50]},
+  skyblue: {label:"Sky",    bg:"#0277BD",mid:"#039BE5",text:"#fff",values:[100]},
+  pink:    {label:"Pink",   bg:"#AD1457",mid:"#E91E8C",text:"#fff",values:[200]},
+  orange:  {label:"Orange", bg:"#E65100",mid:"#F57C00",text:"#fff",values:[300]},
+  red:     {label:"Red",    bg:"#B71C1C",mid:"#E53935",text:"#fff",values:[400]},
+  yellow:  {label:"Yellow", bg:"#F57F17",mid:"#FBC02D",text:"#222",values:[500]},
+  green:   {label:"Green",  bg:"#1B5E20",mid:"#388E3C",text:"#fff",values:[700]},
+  dkblue:  {label:"Blue",   bg:"#1A237E",mid:"#3949AB",text:"#fff",values:[1000]},
+};
+const CK=Object.keys(COLORS);
+
+// ──────────────────────────────────────────────────────────────
+// LEVEL LAYOUTS  (8 rows × 6 cols, 1=tile, 0=gap)
+// ──────────────────────────────────────────────────────────────
+const LAYOUTS=[
+  // 1 EASY – Rounded rectangle (44 tiles)
+  [[0,1,1,1,1,0],
+   [1,1,1,1,1,1],
+   [1,1,1,1,1,1],
+   [1,1,1,1,1,1],
+   [1,1,1,1,1,1],
+   [1,1,1,1,1,1],
+   [1,1,1,1,1,1],
+   [0,1,1,1,1,0]],
+
+  // 2 EASY – Diamond (36 tiles)
+  [[0,0,1,1,0,0],
+   [0,1,1,1,1,0],
+   [1,1,1,1,1,1],
+   [1,1,1,1,1,1],
+   [1,1,1,1,1,1],
+   [1,1,1,1,1,1],
+   [0,1,1,1,1,0],
+   [0,0,1,1,0,0]],
+
+  // 3 EASY – H-shape (36 tiles)
+  [[1,1,0,0,1,1],
+   [1,1,0,0,1,1],
+   [1,1,0,0,1,1],
+   [1,1,1,1,1,1],
+   [1,1,1,1,1,1],
+   [1,1,0,0,1,1],
+   [1,1,0,0,1,1],
+   [1,1,0,0,1,1]],
+
+  // 4 MEDIUM – T-top (30 tiles)
+  [[1,1,1,1,1,1],
+   [1,1,1,1,1,1],
+   [1,1,1,1,1,1],
+   [0,1,1,1,1,0],
+   [0,1,1,1,1,0],
+   [0,0,1,1,0,0],
+   [0,0,1,1,0,0],
+   [0,0,1,1,0,0]],
+
+  // 5 MEDIUM – Plus/Cross (28 tiles)
+  [[0,0,1,1,0,0],
+   [0,0,1,1,0,0],
+   [1,1,1,1,1,1],
+   [1,1,1,1,1,1],
+   [1,1,1,1,1,1],
+   [1,1,1,1,1,1],
+   [0,0,1,1,0,0],
+   [0,0,1,1,0,0]],
+
+  // 6 MEDIUM – Trapezoid (26 tiles, well-connected, no bottleneck)
+  [[0,1,1,1,1,0],
+   [0,1,1,1,1,0],
+   [1,1,1,1,1,1],
+   [1,1,1,1,1,1],
+   [1,1,1,1,1,1],
+   [0,0,0,0,0,0],
+   [0,0,0,0,0,0],
+   [0,0,0,0,0,0]],
+
+  // 7 HARD – Wide 5-row rectangle (30 tiles) — open field for long chains
+  [[1,1,1,1,1,1],
+   [1,1,1,1,1,1],
+   [1,1,1,1,1,1],
+   [1,1,1,1,1,1],
+   [1,1,1,1,1,1],
+   [0,0,0,0,0,0],
+   [0,0,0,0,0,0],
+   [0,0,0,0,0,0]],
+
+  // 8 HARD – Wide 5-row rectangle (30 tiles, same shape — harder goal & fewer moves)
+  [[1,1,1,1,1,1],
+   [1,1,1,1,1,1],
+   [1,1,1,1,1,1],
+   [1,1,1,1,1,1],
+   [1,1,1,1,1,1],
+   [0,0,0,0,0,0],
+   [0,0,0,0,0,0],
+   [0,0,0,0,0,0]],
+
+  // 9 VERY HARD – Wide 6-row rectangle (36 tiles) — max cluster size, brutal goal
+  [[1,1,1,1,1,1],
+   [1,1,1,1,1,1],
+   [1,1,1,1,1,1],
+   [1,1,1,1,1,1],
+   [1,1,1,1,1,1],
+   [1,1,1,1,1,1],
+   [0,0,0,0,0,0],
+   [0,0,0,0,0,0]],
+
+  // 10 VERY HARD – Wide 6-row rectangle (36 tiles, same — fewest moves)
+  [[1,1,1,1,1,1],
+   [1,1,1,1,1,1],
+   [1,1,1,1,1,1],
+   [1,1,1,1,1,1],
+   [1,1,1,1,1,1],
+   [1,1,1,1,1,1],
+   [0,0,0,0,0,0],
+   [0,0,0,0,0,0]],
+];
+
+const BASE_LEVELS=[
+  // Easy  — 44 tiles, 20 moves (goal below AI worst-case → 100% win)
+  {goal:25000, moves:20, label:"Boardwalk Start",   diff:"easy"},
+  // Easy  — 36 tiles, 20 moves
+  {goal:28000, moves:20, label:"Baltic Avenue",      diff:"easy"},
+  // Easy  — 36 tiles, 18 moves
+  {goal:16000, moves:18, label:"Oriental Ave",       diff:"easy"},
+  // Medium — 30 tiles, 17 moves
+  {goal:34000, moves:17, label:"Vermont Ave",        diff:"medium"},
+  // Medium — 28 tiles, 16 moves
+  {goal:31000, moves:16, label:"Park Place",         diff:"medium"},
+  // Medium — 28 tiles, 15 moves
+  {goal:28000, moves:15, label:"Property Mogul",     diff:"medium"},
+  // Hard  — 30 tiles, 14 moves
+  {goal:29000, moves:14, label:"Marvin Gardens",     diff:"hard"},
+  // Hard  — 30 tiles, 13 moves
+  {goal:27000, moves:13, label:"Estate Tycoon",      diff:"hard"},
+  // V.Hard — 36 tiles, 11 moves
+  {goal:28000, moves:11, label:"Boardwalk Baron",    diff:"vhard"},
+  // V.Hard — 36 tiles, 10 moves
+  {goal:26000, moves:10, label:"Monopoly Master",    diff:"vhard"},
+];
+// mutable moves (editable)
+let LEVELS=BASE_LEVELS.map(l=>({...l}));
+
+// ══════════════════════════════════════════════════════════════════
+// AUDIO ENGINE (Web Audio API — no files needed)
+// ══════════════════════════════════════════════════════════════════
+let audioCtx=null, bgmNodes=[], soundOn=true, bgmPlaying=false;
+let passGoEnabled=false; // Pass Go cards disabled by default
+
+function getCtx(){
+  if(!audioCtx) audioCtx=new(window.AudioContext||window.webkitAudioContext)();
+  if(audioCtx.state==="suspended") audioCtx.resume();
+  return audioCtx;
+}
+
+function playTone(freq,dur,type="sine",vol=0.18,delay=0){
+  if(!soundOn) return;
+  try{
+    const ctx=getCtx();
+    const o=ctx.createOscillator(), g=ctx.createGain();
+    o.connect(g); g.connect(ctx.destination);
+    o.type=type; o.frequency.value=freq;
+    const t=ctx.currentTime+delay;
+    g.gain.setValueAtTime(0,t);
+    g.gain.linearRampToValueAtTime(vol,t+0.01);
+    g.gain.exponentialRampToValueAtTime(0.001,t+dur);
+    o.start(t); o.stop(t+dur+0.05);
+  }catch(e){}
+}
+
+function sfxConnect(mult){
+  if(!soundOn) return;
+  const notes=mult>=3?[523,659,784,1047]:mult>=2?[440,554,659]:mult>=1.5?[392,494,587]:[330,415];
+  notes.forEach((f,i)=>playTone(f,0.1+(i*0.04),"triangle",0.15,i*0.06));
+}
+function sfxFail(){playTone(220,0.2,"sawtooth",0.1);playTone(196,0.25,"sawtooth",0.08,0.1);}
+function sfxBooster(){playTone(880,0.08,"square",0.12);playTone(1108,0.1,"square",0.1,0.07);playTone(1320,0.15,"sine",0.15,0.14);}
+function sfxSwap(){playTone(660,0.08,"sine",0.14);playTone(880,0.1,"sine",0.12,0.1);}
+function sfxReshuffle(){[440,554,659,784,880].forEach((f,i)=>playTone(f,0.09,"triangle",0.12,i*0.05));}
+function sfxWin(){
+  const melody=[523,659,784,659,784,1047];
+  melody.forEach((f,i)=>playTone(f,0.18,"sine",0.2,i*0.12));
+  setTimeout(()=>playTone(1047,0.5,"sine",0.25),melody.length*120);
+}
+function sfxLose(){
+  [440,392,349,330].forEach((f,i)=>playTone(f,0.22,"sawtooth",0.13,i*0.14));
+}
+function sfxPassGo(){[660,784,880,1047].forEach((f,i)=>playTone(f,0.1,"triangle",0.18,i*0.07));}
+function sfxRent(){[440,660,880].forEach((f,i)=>playTone(f,0.12,"sine",0.2,i*0.05));}
+
+// BGM — upbeat Monopoly-style march: bouncy melody + walking bass + staccato chords + hi-hat
+// BPM = 132, beat = 454ms, 16-beat loop = ~7.3s then repeats
+let bgmTimer=null;
+let bgmBeat=0;
+const BPM=132, BEAT=60/BPM; // seconds per beat
+
+// Walking bass line (C major / G dominant, 16 beats)
+const BASS_LINE=[
+  130.8,130.8,146.8,146.8, // C C G G
+  164.8,164.8,174.6,174.6, // E E F F
+  130.8,146.8,164.8,174.6, // walking up
+  196.0,174.6,164.8,146.8  // walking down
+];
+// Melody line (two-octave playful, 16 beats, some rests=0)
+const MELODY=[
+  523.3,0,659.3,587.3,      // C - E D
+  523.3,392.0,440.0,0,      // C G A -
+  523.3,587.3,659.3,784.0,  // C D E G
+  659.3,587.3,523.3,0       // E D C -
+];
+// Staccato chord hits on beats 0,2,4... (root triads, 3 notes each)
+const CHORDS=[
+  [261.6,329.6,392.0], // C
+  [261.6,329.6,392.0],
+  [293.7,369.9,440.0], // D (passing)
+  [261.6,329.6,392.0],
+  [329.6,415.3,493.9], // E minor
+  [329.6,415.3,493.9],
+  [349.2,440.0,523.3], // F
+  [349.2,440.0,523.3],
+  [261.6,329.6,392.0],
+  [293.7,369.9,440.0],
+  [329.6,415.3,493.9],
+  [349.2,440.0,523.3],
+  [392.0,493.9,587.3], // G
+  [349.2,440.0,523.3],
+  [329.6,415.3,493.9],
+  [293.7,369.9,440.0],
+];
+
+function scheduleBGMLoop(){
+  if(!bgmPlaying||!soundOn) return;
+  try{
+    const ctx=getCtx();
+    const beat=bgmBeat%16;
+    const now=ctx.currentTime;
+
+    // 1. Walking bass — punchy sine
+    const bf=BASS_LINE[beat];
+    const b=ctx.createOscillator(), bg=ctx.createGain();
+    b.connect(bg); bg.connect(ctx.destination);
+    b.type="sine"; b.frequency.value=bf;
+    bg.gain.setValueAtTime(0.12,now);
+    bg.gain.exponentialRampToValueAtTime(0.001,now+BEAT*0.75);
+    b.start(now); b.stop(now+BEAT*0.8);
+
+    // 2. Melody — square wave, bright
+    const mf=MELODY[beat];
+    if(mf>0){
+      const m=ctx.createOscillator(), mg=ctx.createGain();
+      m.connect(mg); mg.connect(ctx.destination);
+      m.type="square"; m.frequency.value=mf;
+      mg.gain.setValueAtTime(0.028,now);
+      mg.gain.exponentialRampToValueAtTime(0.001,now+BEAT*0.55);
+      m.start(now); m.stop(now+BEAT*0.6);
+    }
+
+    // 3. Staccato chord stabs on every even beat — triangle, short
+    if(beat%2===0){
+      CHORDS[beat].forEach((freq,i)=>{
+        const o=ctx.createOscillator(), g=ctx.createGain();
+        o.connect(g); g.connect(ctx.destination);
+        o.type="triangle"; o.frequency.value=freq;
+        g.gain.setValueAtTime(0.03,now+0.01);
+        g.gain.exponentialRampToValueAtTime(0.001,now+BEAT*0.38);
+        o.start(now+0.01); o.stop(now+BEAT*0.4);
+      });
+    }
+
+    // 4. Hi-hat click — white noise burst every beat
+    const bufSize=ctx.sampleRate*0.04;
+    const buf=ctx.createBuffer(1,bufSize,ctx.sampleRate);
+    const d=buf.getChannelData(0);
+    for(let i=0;i<bufSize;i++) d[i]=(Math.random()*2-1);
+    const noise=ctx.createBufferSource(), nhg=ctx.createGain();
+    const hpf=ctx.createBiquadFilter();
+    hpf.type="highpass"; hpf.frequency.value=8000;
+    noise.buffer=buf; noise.connect(hpf); hpf.connect(nhg); nhg.connect(ctx.destination);
+    nhg.gain.setValueAtTime(beat%2===0?0.06:0.03,now);
+    nhg.gain.exponentialRampToValueAtTime(0.001,now+0.04);
+    noise.start(now); noise.stop(now+0.05);
+
+    // 5. Kick drum on beats 0 and 8 — pitched sine sweep
+    if(beat===0||beat===8){
+      const k=ctx.createOscillator(), kg=ctx.createGain();
+      k.connect(kg); kg.connect(ctx.destination);
+      k.type="sine"; k.frequency.setValueAtTime(160,now);
+      k.frequency.exponentialRampToValueAtTime(40,now+0.12);
+      kg.gain.setValueAtTime(0.22,now);
+      kg.gain.exponentialRampToValueAtTime(0.001,now+0.22);
+      k.start(now); k.stop(now+0.25);
+    }
+
+    bgmBeat++;
+  }catch(e){}
+  bgmTimer=setTimeout(scheduleBGMLoop, BEAT*1000-10);
+}
+
+function startBGM(){
+  if(!soundOn||bgmPlaying) return;
+  bgmPlaying=true;
+  bgmBeat=0;
+  scheduleBGMLoop();
+}
+function stopBGM(){
+  bgmPlaying=false;
+  if(bgmTimer){clearTimeout(bgmTimer);bgmTimer=null;}
+  bgmBeat=0;
+}
+function toggleSound(){
+  soundOn=!soundOn;
+  const btn=document.getElementById("snd-btn");
+  btn.textContent=soundOn?"🔊":"🔇";
+  btn.classList.toggle("on",soundOn);
+  if(soundOn) startBGM(); else stopBGM();
+}
+
+// ══════════════════════════════════════════════════════════════════
+// GAME STATE
+// ══════════════════════════════════════════════════════════════════
+let grid=[],chain=[],dragging=false;
+let bank=0,wallet=10000,totalSets=0,moves=20,movesEnabled=true;
+let level=0,gameState="start",idc=0;
+let activeBooster=null,slyPick1=null,dbPicks=[];
+let completedLevels=new Set();
+
+const $=id=>document.getElementById(id);
+
+// ══════════════════════════════════════════════════════════════════
+// CARDS
+// ══════════════════════════════════════════════════════════════════
+function randCard(){
+  const r=Math.random();
+  if(passGoEnabled&&r<0.05) return{type:'pg',id:++idc};
+  // Rent frequency by difficulty: easy=10%, medium=6%, hard=4%, vhard=2%
+  const diff=LEVELS[level]?.diff||"easy";
+  const rntRate={easy:0.10,medium:0.06,hard:0.04,vhard:0.02}[diff]||0.10;
+  if(r<rntRate) return{type:'rnt',id:++idc};
+  const c=CK[Math.floor(Math.random()*CK.length)];
+  const vs=COLORS[c].values;
+  return{type:'prop',color:c,value:vs[Math.floor(Math.random()*vs.length)],id:++idc};
+}
+function makeGrid(){
+  const layout=LAYOUTS[level];
+  return Array.from({length:ROWS},(_,r)=>Array.from({length:COLS},(_,col)=>layout[r][col]?randCard():null));
+}
+function isAdj(r1,c1,r2,c2){return Math.abs(r1-r2)<=1&&Math.abs(c1-c2)<=1&&!(r1===r2&&c1===c2);}
+function dropFill(g){
+  const ng=g.map(r=>[...r]);
+  const layout=LAYOUTS[level];
+  for(let c=0;c<COLS;c++){
+    const active=[];
+    for(let r=0;r<ROWS;r++) if(layout[r][c]) active.push(r);
+    const cards=active.map(r=>ng[r][c]).filter(Boolean);
+    while(cards.length<active.length) cards.unshift(randCard());
+    active.forEach((r,i)=>ng[r][c]=cards[i]);
+  }
+  return ng;
+}
+function fmt(n){return n>=1000?`$${(n/1000).toFixed(n%1000===0?0:1)}K`:`$${n}`;}
+function getMult(len){return len>=10?3:len>=7?2:len>=5?1.5:1;}
+
+// ══════════════════════════════════════════════════════════════════
+// UI UPDATES
+// ══════════════════════════════════════════════════════════════════
+function updateHeader(){
+  const pct=Math.round(Math.min(bank/LEVELS[level].goal*100,100));
+  $("bank-cur").textContent=fmt(bank);
+  $("bank-goal").textContent=fmt(LEVELS[level].goal);
+  $("bank-fill").style.width=pct+"%";
+  $("bank-pct").textContent=pct+"%";
+  $("chip-level").textContent=`Lvl ${level+1}`;
+  $("sets-n").textContent=totalSets;
+  $("sets-made").textContent=`${totalSets} set${totalSets!==1?"s":""}`;
+  $("wallet-val").textContent=fmt(wallet);
+}
+function updateMovesUI(){
+  const mw=$("moves-wrap");
+  if(!movesEnabled||gameState!=="playing"){
+    // grey out the card but keep it visible
+    mw.style.opacity="0.35";
+    $("moves-num").textContent="∞";
+    $("moves-num").className="sm-num ok";
+    $("moves-bar").style.width="100%";
+    $("moves-bar").className="sm-bar-fill mfull";
+    return;
+  }
+  mw.style.opacity="1";
+  const thr=Math.ceil(LEVELS[level].moves*0.4);
+  const cls=moves<=3?"danger":moves<=thr?"warn":"ok";
+  $("moves-num").className="sm-num "+cls;
+  $("moves-num").textContent=moves;
+  $("moves-bar").className="sm-bar-fill "+(cls==="ok"?"mfull":cls==="warn"?"mwarn":"mdanger");
+  $("moves-bar").style.width=(moves/LEVELS[level].moves*100)+"%";
+}
+function updateToggleUI(){
+  $("tgl-sw").classList.toggle("on",movesEnabled);
+  $("tgl-lbl").classList.toggle("on",movesEnabled);
+  updateMovesUI();
+}
+function updateBoosterUI(){
+  ["sly","frc","brk","resh"].forEach((k,i)=>{
+    const keys=["sly","forced","break","reshuffle"];
+    const btn=$("b-"+k);
+    btn.classList.toggle("off",wallet<BCOSTS[keys[i]]);
+    btn.classList.toggle("active",activeBooster===keys[i]);
+  });
+  const pgBtn=$("b-pg");
+  pgBtn.classList.toggle("pg-on",passGoEnabled);
+  pgBtn.classList.toggle("off",false);
+  $("pg-pr").textContent=passGoEnabled?"ON":"OFF";
+}
+
+function togglePassGo(){
+  passGoEnabled=!passGoEnabled;
+  updateBoosterUI();
+  showToast(passGoEnabled?"🚀 Pass Go ON!":"🚀 Pass Go OFF",
+    passGoEnabled?"Rocket cards will appear on the board":"Rocket cards removed from board",
+    passGoEnabled?"gt":"");
+  // Replace any existing pg cards on the board with regular prop cards
+  if(!passGoEnabled){
+    let changed=false;
+    for(let r=0;r<ROWS;r++) for(let c=0;c<COLS;c++){
+      if(grid[r]?.[c]?.type==="pg"){
+        const col=CK[Math.floor(Math.random()*CK.length)];
+        const vs=COLORS[col].values;
+        grid[r][c]={type:"prop",color:col,value:vs[Math.floor(Math.random()*vs.length)],id:++idc};
+        changed=true;
+      }
+    }
+    if(changed) rebuildGrid();
+  }
+}
+
+// ══════════════════════════════════════════════════════════════════
+// LEGEND
+// ══════════════════════════════════════════════════════════════════
+function buildLegend(){
+  const el=$("legend");el.innerHTML="";
+  CK.forEach(k=>{
+    const d=document.createElement("div");d.className="lpill";
+    d.innerHTML=`<div class="ldot" style="background:${COLORS[k].mid}"></div><span class="lval">${fmt(Math.max(...COLORS[k].values))}</span>`;
+    el.appendChild(d);
+  });
+}
+
+// ══════════════════════════════════════════════════════════════════
+// CARD ELEMENTS
+// ══════════════════════════════════════════════════════════════════
+let cellEls={};
+function makeCardEl(card,r,c){
+  const el=document.createElement("div");
+  el.className="card"; el.dataset.row=r; el.dataset.col=c; el.dataset.id=card.id;
+  if(card.type==="pg"){
+    el.classList.add("s-pg");
+    el.innerHTML=`<div class="ci" style="background:linear-gradient(145deg,#1a472a,#0a1f10)"><div class="c-sh"></div><span class="c-ico">🚀</span><span class="c-sub" style="color:#34C759">PASS GO</span><span class="c-val" style="color:#34C759;font-size:8px">+2 MVS</span></div>`;
+  } else if(card.type==="rnt"){
+    el.classList.add("s-rnt");
+    el.innerHTML=`<div class="ci" style="background:linear-gradient(145deg,#3a2a00,#1e1500)"><div class="c-sh"></div><span class="c-ico">💰</span><span class="c-sub" style="color:#FFD700">RENT</span><span class="c-val" style="color:#FFD700;font-size:8px">×2 VAL</span></div>`;
+  } else {
+    const cfg=COLORS[card.color];
+    el.innerHTML=`<div class="ci"><div class="c-bg" style="background:linear-gradient(145deg,${cfg.mid},${cfg.bg} 58%)"></div><div class="c-pt"></div><div class="c-sh"></div><span class="c-ico">🏠</span><span class="c-val${cfg.text==='#222'?' dk':''}">${fmt(card.value)}</span></div>`;
+  }
+  el.addEventListener("mousedown",e=>{e.preventDefault();onCardDown(r,c);});
+  el.addEventListener("touchstart",e=>{e.preventDefault();onCardDown(r,c);},{passive:false});
+  el.addEventListener("mouseenter",()=>{if(dragging&&!activeBooster)extendChain(r,c);});
+  return el;
+}
+function buildGrid(){
+  const g=$("grid");g.innerHTML="";cellEls={};
+  const layout=LAYOUTS[level];
+  for(let r=0;r<ROWS;r++) for(let c=0;c<COLS;c++){
+    if(!layout[r][c]){
+      const sp=document.createElement("div");sp.className="cell-gap";
+      g.appendChild(sp);cellEls[`${r}-${c}`]=null;
+    } else {
+      const el=makeCardEl(grid[r][c],r,c);
+      g.appendChild(el);cellEls[`${r}-${c}`]=el;
+    }
+  }
+}
+function rebuildGrid(newIds=new Set()){
+  const layout=LAYOUTS[level];
+  for(let r=0;r<ROWS;r++) for(let c=0;c<COLS;c++){
+    if(!layout[r][c]) continue;
+    const key=`${r}-${c}`,card=grid[r][c],old=cellEls[key];
+    if(!card) continue;
+    const isNew=!old||(parseInt(old.dataset.id)||0)!==card.id;
+    if(isNew){
+      const el=makeCardEl(card,r,c);
+      if(newIds.size===0||newIds.has(key)) el.classList.add("din");
+      if(old) old.parentNode.replaceChild(el,old);
+      cellEls[key]=el;
+      setTimeout(()=>el.classList.remove("din"),400);
+    } else {
+      old.classList.remove("pop","in-ch","head","inv","sp1","dbsel","din");
+      const bn=old.querySelector(".cn");if(bn)bn.remove();
+    }
+  }
+}
+
+// ══════════════════════════════════════════════════════════════════
+// CHAIN LOGIC
+// ══════════════════════════════════════════════════════════════════
+function chainColor(){return chain.length>0?grid[chain[0].row][chain[0].col].color:null;}
+function chainEarn(){
+  let v=0, rntCount=0;
+  chain.forEach(({row,col})=>{const cd=grid[row][col];if(cd.type==="prop")v+=cd.value;if(cd.type==="rnt")rntCount++;});
+  const pc=chain.filter(({row,col})=>grid[row][col].type==="prop").length;
+  const base=Math.floor(v*getMult(pc));
+  return rntCount>0 ? base * Math.pow(2,rntCount) : base;
+}
+function inChain(r,c){return chain.some(x=>x.row===r&&x.col===c);}
+
+function updateChainUI(){
+  const cc=chainColor(),cfg=cc?COLORS[cc]:null;
+  const wrap=$("chain-wrap");
+  const pc=chain.filter(({row,col})=>grid[row][col].type==="prop").length;
+  const rntCount=chain.filter(({row,col})=>grid[row][col].type==="rnt").length;
+  const pgCount=chain.filter(({row,col})=>grid[row][col].type==="pg").length;
+  if(chain.length===0){
+    wrap.innerHTML=`<span class="chain-hint">Draw to connect same-color cards</span>`;
+  } else {
+    const earn=chainEarn(),mult=getMult(pc);
+    const need=pc<MIN_CHAIN?`<span class="chain-need"> (need ${MIN_CHAIN-pc} more)</span>`:"";
+    const es=pc>=MIN_CHAIN?`<span class="chain-earn">+${fmt(earn)}</span>`:"";
+    const ms=pc>=MIN_CHAIN&&mult>1?`<span class="chain-mult">×${mult}</span>`:"";
+    const rntMult=rntCount>0?Math.pow(2,rntCount):0;
+    const bs=(pgCount>0?`<span style="font-size:7.5px;color:#34C759">🚀+${pgCount*2}mv</span>`:"")+
+             (rntCount>0?`<span style="font-size:7.5px;color:#FFD700">💰×${rntMult}</span>`:"");
+    wrap.innerHTML=`<div class="chain-info"><div class="chain-dot" style="background:${cfg?cfg.mid:'#aaa'}"></div><span class="chain-txt">${chain.length}${need}</span>${es}${ms}${bs}</div>`;
+  }
+  for(let r=0;r<ROWS;r++) for(let c=0;c<COLS;c++){
+    const el=cellEls[`${r}-${c}`];if(!el) continue;
+    el.classList.remove("in-ch","head","inv");
+    const bn=el.querySelector(".cn");if(bn)bn.remove();
+    if(inChain(r,c)){
+      el.classList.add("in-ch");
+      if(chain[chain.length-1].row===r&&chain[chain.length-1].col===c) el.classList.add("head");
+      const idx=chain.findIndex(x=>x.row===r&&x.col===c);
+      const b=document.createElement("div");b.className="cn";b.textContent=idx+1;el.appendChild(b);
+    } else if(dragging&&cc){
+      const cd=grid[r][c];
+      if(cd.type==="prop"&&cd.color!==cc) el.classList.add("inv");
+    }
+  }
+  drawLines();
+}
+
+function cellCenter(r,c){
+  const el=cellEls[`${r}-${c}`],w=$("grid-wrap");
+  if(!el||!w) return null;
+  const wr=w.getBoundingClientRect(),cr=el.getBoundingClientRect();
+  return{x:cr.left-wr.left+cr.width/2,y:cr.top-wr.top+cr.height/2};
+}
+function drawLines(){
+  const svg=$("svg-ov");svg.innerHTML="";
+  for(let i=1;i<chain.length;i++){
+    const a=cellCenter(chain[i-1].row,chain[i-1].col);
+    const b=cellCenter(chain[i].row,chain[i].col);
+    if(!a||!b) continue;
+    const p=chain.slice(0,i+1).filter(({row,col})=>grid[row][col].type==="prop").length;
+    const m=getMult(p);
+    const cls=m>=3?"l3":m>=2?"l2":m>=1.5?"l15":"l1";
+    const ln=document.createElementNS("http://www.w3.org/2000/svg","line");
+    ln.setAttribute("x1",a.x);ln.setAttribute("y1",a.y);
+    ln.setAttribute("x2",b.x);ln.setAttribute("y2",b.y);
+    ln.setAttribute("class",cls);ln.setAttribute("stroke-width","4");ln.setAttribute("stroke-linecap","round");
+    svg.appendChild(ln);
+  }
+}
+
+// ══════════════════════════════════════════════════════════════════
+// POINTER
+// ══════════════════════════════════════════════════════════════════
+function getCellAt(cx,cy){
+  const w=$("grid-wrap");if(!w) return null;
+  const wr=w.getBoundingClientRect();
+  for(let r=0;r<ROWS;r++) for(let c=0;c<COLS;c++){
+    const el=cellEls[`${r}-${c}`];if(!el) continue;
+    const cr=el.getBoundingClientRect();
+    if(cx>=cr.left&&cx<=cr.right&&cy>=cr.top&&cy<=cr.bottom) return{row:r,col:c};
+  }
+  return null;
+}
+function onCardDown(r,c){
+  if(gameState!=="playing") return;
+  if(simRunning&&!simPaused) return; // AI has control — block player input
+  resetHintTimer();
+  if(activeBooster){handleBoosterTap(r,c);return;}
+  const card=grid[r][c];
+  if(!card||card.type==="pg"||card.type==="rnt") return;
+  dragging=true; chain=[{row:r,col:c}]; updateChainUI();
+}
+function extendChain(r,c){
+  if(!dragging) return;
+  const card=grid[r][c];if(!card) return;
+  const cc=chainColor();
+  if(card.type==="pg"||card.type==="rnt"){
+    if(inChain(r,c)) return;
+    const last=chain[chain.length-1];
+    if(!isAdj(last.row,last.col,r,c)) return;
+    chain.push({row:r,col:c});updateChainUI();return;
+  }
+  if(!cc||card.color!==cc) return;
+  if(chain.length>=2){const pv=chain[chain.length-2];if(pv.row===r&&pv.col===c){chain.pop();updateChainUI();return;}}
+  if(inChain(r,c)) return;
+  const last=chain[chain.length-1];
+  if(!isAdj(last.row,last.col,r,c)) return;
+  chain.push({row:r,col:c});updateChainUI();
+}
+function commitChain(){
+  if(!dragging){dragging=false;return;}
+  dragging=false;
+  const pc=chain.filter(({row,col})=>grid[row][col].type==="prop").length;
+  if(pc<MIN_CHAIN){chain=[];updateChainUI();sfxFail();return;}
+  const earn=chainEarn(),len=chain.length,mult=getMult(pc);
+  const pgCount=chain.filter(({row,col})=>grid[row][col].type==="pg").length;
+  const rntCount=chain.filter(({row,col})=>grid[row][col].type==="rnt").length;
+  const toRem=[...chain];
+  const mid=toRem[Math.floor(toRem.length/2)];
+  const mp=cellCenter(mid.row,mid.col);
+  if(mp){
+    const wr=$("grid-wrap").getBoundingClientRect(),rr=$("root").getBoundingClientRect();
+    addPop(`+${fmt(earn)}${mult>1?` ×${mult}`:""}`,wr.left-rr.left+mp.x,wr.top-rr.top+mp.y,"");
+    if(rntCount>0) addPop(`💰 ×${Math.pow(2,rntCount)}!`,wr.left-rr.left+mp.x,wr.top-rr.top+mp.y-20,"");
+    if(pgCount>0)  addPop(`🚀 +${pgCount*2} MOVES`,wr.left-rr.left+mp.x,wr.top-rr.top+mp.y+20,"grn");
+  }
+  toRem.forEach(({row,col})=>{const el=cellEls[`${row}-${col}`];if(el)el.classList.add("pop");});
+  chain=[];updateChainUI();
+  sfxConnect(mult);
+  setTimeout(()=>{
+    toRem.forEach(({row,col})=>{grid[row][col]=null;});
+    grid=dropFill(grid);
+    bank+=earn;totalSets++;
+    if(movesEnabled) moves=Math.max(0,moves-1);
+    if(pgCount>0&&movesEnabled){const pgMoves=pgCount*2;moves+=pgMoves;sfxPassGo();showToast("🚀 PASS GO!",`+${pgMoves} moves added!`,"gt");}
+    if(rntCount>0){sfxRent();showToast(`💰 RENT ×${Math.pow(2,rntCount)}!`,`${fmt(earn)} banked!`);}
+    else if(mult>=3) showToast("MEGA CHAIN! 🔥",`×3 — ${fmt(earn)} banked!`);
+    else if(mult>=2) showToast("SUPER CHAIN! ⚡",`×2 — ${fmt(earn)} banked!`);
+    else if(mult>=1.5) showToast("GREAT CHAIN!",`×1.5 — ${fmt(earn)} banked!`);
+    else showToast(`${pc}-CARD SET!`,`${fmt(earn)} added to bank`);
+    rebuildGrid();updateHeader();updateMovesUI();
+    resetHintTimer(); // restart 10s idle clock after each successful move
+    if(movesEnabled&&moves<=3&&moves>0){const mw=$("moves-wrap");mw.classList.add("shake");setTimeout(()=>mw.classList.remove("shake"),400);}
+    if(bank>=LEVELS[level].goal) setTimeout(showWin,450);
+    else if(movesEnabled&&moves<=0) setTimeout(showLose,450);
+    else autoReshuffleIfNeeded();
+  },220);
+}
+
+// ══════════════════════════════════════════════════════════════════
+// DEADLOCK DETECTION & AUTO-RESHUFFLE (free)
+// ══════════════════════════════════════════════════════════════════
+
+// BFS per color — returns true if any color has a connected component
+// of prop cards (8-directional adjacency) with size >= MIN_CHAIN
+function hasValidConnection(g){
+  for(const color of CK){
+    const visited=new Set();
+    for(let r=0;r<ROWS;r++) for(let c=0;c<COLS;c++){
+      const key=`${r}-${c}`;
+      if(visited.has(key)) continue;
+      if(g[r][c]?.type!=="prop"||g[r][c].color!==color) continue;
+      const queue=[{r,c}]; visited.add(key); let size=0;
+      while(queue.length){
+        const {r:cr,c:cc}=queue.shift(); size++;
+        if(size>=MIN_CHAIN) return true;
+        for(let dr=-1;dr<=1;dr++) for(let dc=-1;dc<=1;dc++){
+          if(dr===0&&dc===0) continue;
+          const nr=cr+dr, nc=cc+dc;
+          if(nr<0||nr>=ROWS||nc<0||nc>=COLS) continue;
+          const nk=`${nr}-${nc}`;
+          if(!visited.has(nk)&&g[nr][nc]?.type==="prop"&&g[nr][nc].color===color){
+            visited.add(nk); queue.push({r:nr,c:nc});
+          }
+        }
+      }
+    }
+  }
+  return false;
+}
+
+// Keep regenerating until we get a board with at least one valid connection
+// ── RESHUFFLE: rearrange only the existing cards already on the board ──
+// Returns a new grid with the same cards in different positions.
+// If after MAX_ATTEMPTS the shuffle still has no valid connection
+// (extremely rare — means the card distribution is unfixable),
+// we force-replace the worst card rather than adding brand-new ones.
+function reshuffleExistingCards(){
+  const layout=LAYOUTS[level];
+
+  // 1. Collect all cards currently on the board
+  const pool=[];
+  for(let r=0;r<ROWS;r++) for(let c=0;c<COLS;c++){
+    if(layout[r][c]&&grid[r][c]) pool.push({...grid[r][c]});
+  }
+
+  // 2. Shuffle pool
+  function shuffleArr(a){for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]];}}
+
+  // 3. Try up to 40 arrangements until one has a valid connection
+  for(let attempt=0;attempt<40;attempt++){
+    shuffleArr(pool);
+    const g=grid.map(row=>row.map(()=>null));
+    let pi=0;
+    for(let r=0;r<ROWS;r++) for(let c=0;c<COLS;c++){
+      if(layout[r][c]) g[r][c]={...pool[pi++]};
+    }
+    if(hasValidConnection(g)) return g;
+  }
+
+  // 4. Last resort: the pool has no valid arrangement (e.g. only 1-2 cards per color).
+  //    Force one guaranteed match by picking the most common prop color and ensuring
+  //    MIN_CHAIN of them are adjacent — still only using cards from the pool.
+  const colorCounts={};
+  pool.forEach(cd=>{if(cd.type==='prop'){colorCounts[cd.color]=(colorCounts[cd.color]||0)+1;}});
+  const topColor=Object.keys(colorCounts).sort((a,b)=>colorCounts[b]-colorCounts[a])[0];
+
+  if(topColor&&colorCounts[topColor]>=MIN_CHAIN){
+    // Place MIN_CHAIN of topColor adjacent in top-left of layout, rest random
+    const topCards=pool.filter(cd=>cd.type==='prop'&&cd.color===topColor);
+    const otherCards=pool.filter(cd=>!(cd.type==='prop'&&cd.color===topColor));
+    shuffleArr(otherCards);
+
+    // Find MIN_CHAIN adjacent active cells
+    const activeCells=[];
+    for(let r=0;r<ROWS;r++) for(let c=0;c<COLS;c++) if(layout[r][c]) activeCells.push([r,c]);
+    // BFS to find a cluster of MIN_CHAIN adjacent cells
+    let seedCells=null;
+    outer: for(const [sr,sc] of activeCells){
+      const q=[[sr,sc]],visited=new Set([`${sr}-${sc}`]),cluster=[[sr,sc]];
+      while(q.length&&cluster.length<MIN_CHAIN){
+        const [r,c]=q.shift();
+        for(let dr=-1;dr<=1;dr++) for(let dc=-1;dc<=1;dc++){
+          if(dr===0&&dc===0) continue;
+          const nr=r+dr,nc=c+dc,nk=`${nr}-${nc}`;
+          if(!visited.has(nk)&&nr>=0&&nr<ROWS&&nc>=0&&nc<COLS&&layout[nr][nc]){
+            visited.add(nk);q.push([nr,nc]);cluster.push([nr,nc]);
+            if(cluster.length>=MIN_CHAIN){seedCells=cluster.slice(0,MIN_CHAIN);break outer;}
+          }
+        }
+      }
+    }
+    if(seedCells){
+      const seedSet=new Set(seedCells.map(([r,c])=>`${r}-${c}`));
+      const g=grid.map(row=>row.map(()=>null));
+      let ti=0,oi=0;
+      for(let r=0;r<ROWS;r++) for(let c=0;c<COLS;c++){
+        if(!layout[r][c]) continue;
+        if(seedSet.has(`${r}-${c}`)&&ti<topCards.length) g[r][c]={...topCards[ti++]};
+        else if(oi<otherCards.length) g[r][c]={...otherCards[oi++]};
+        else g[r][c]={...topCards[ti++]||otherCards[oi++]};
+      }
+      return g;
+    }
+  }
+
+  // Absolute fallback — shuffle as-is (better than nothing)
+  shuffleArr(pool);
+  const g=grid.map(row=>row.map(()=>null));
+  let pi2=0;
+  for(let r=0;r<ROWS;r++) for(let c=0;c<COLS;c++){
+    if(layout[r][c]) g[r][c]={...pool[pi2++]};
+  }
+  return g;
+}
+
+// At game start, make a fresh grid then guarantee it's valid (new cards OK here)
+function makeGridWithConnections(){
+  let g, attempts=0;
+  do{ g=makeGrid(); attempts++; } while(!hasValidConnection(g)&&attempts<30);
+  return g;
+}
+
+// Called after every grid change — silently reshuffles EXISTING cards if deadlocked
+function autoReshuffleIfNeeded(){
+  if(gameState!=="playing") return;
+  if(bank>=LEVELS[level].goal) return;
+  if(movesEnabled&&moves<=0) return;
+  if(hasValidConnection(grid)) return;
+
+  setTimeout(()=>{
+    if(gameState!=="playing") return;
+    grid=reshuffleExistingCards();
+    sfxReshuffle();
+    buildGrid();
+    showToast("🔀 Cards Reshuffled!","No moves — cards rearranged free!","tt");
+  }, 750);
+}
+
+// ══════════════════════════════════════════════════════════════════
+// BOOSTERS
+// ══════════════════════════════════════════════════════════════════
+function activateBooster(type){
+  if(gameState!=="playing") return;
+  resetHintTimer();
+  if(wallet<BCOSTS[type]){showToast("Not enough funds!",`Need ${fmt(BCOSTS[type])} in wallet`);return;}
+  if(activeBooster===type){cancelBooster();return;}
+
+  // Reshuffle is instant — no mode needed
+  if(type==="reshuffle"){
+    wallet-=BCOSTS.reshuffle;
+    grid=reshuffleExistingCards();
+    sfxReshuffle();
+    showToast("🔀 Reshuffled!","Cards rearranged!","tt");
+    cancelBooster(false);
+    buildGrid();updateHeader();updateBoosterUI();
+    return;
+  }
+
+  cancelBooster(false);
+  activeBooster=type;slyPick1=null;dbPicks=[];
+  updateBoosterUI();sfxBooster();
+  const hr=$("b-hint-row"),htxt=$("b-hint-txt"),dbgo=$("db-go");
+  hr.style.display="flex";dbgo.style.display="none";
+  if(type==="sly")    htxt.textContent="🔄 Tap card 1 to swap";
+  if(type==="forced") htxt.textContent="🗑️ Tap a color — clears all + banks their value!";
+  if(type==="break")  {htxt.textContent="⚡ Pick any 4 cards (any color) to cash out";dbgo.style.display="block";dbgo.disabled=true;}
+}
+function cancelBooster(refresh=true){
+  activeBooster=null;slyPick1=null;dbPicks=[];
+  $("b-hint-row").style.display="none";
+  for(let r=0;r<ROWS;r++) for(let c=0;c<COLS;c++){
+    const el=cellEls[`${r}-${c}`];if(el)el.classList.remove("sp1","dbsel");
+  }
+  if(refresh){updateBoosterUI();$("svg-ov").innerHTML="";}
+}
+function handleBoosterTap(r,c){
+  const card=grid[r][c];if(!card) return;
+  if(activeBooster==="sly"){
+    if(!slyPick1){
+      slyPick1={row:r,col:c};
+      cellEls[`${r}-${c}`]?.classList.add("sp1");
+      $("b-hint-txt").textContent="🔄 Now tap card 2";
+    } else {
+      if(slyPick1.row===r&&slyPick1.col===c){cancelBooster();return;}
+      wallet-=BCOSTS.sly;
+      const a=slyPick1;
+      const tmp=grid[a.row][a.col];
+      grid[a.row][a.col]={...grid[r][c],id:++idc};
+      grid[r][c]={...tmp,id:++idc};
+      cancelBooster(false);sfxSwap();
+      rebuildGrid();updateHeader();updateBoosterUI();
+      showToast("🔄 Sly Deal!","Cards swapped","bt");
+    }
+    return;
+  }
+  if(activeBooster==="forced"){
+    if(card.type!=="prop"){showToast("Pick a property card","Can't target specials");return;}
+    const tc=card.color;wallet-=BCOSTS.forced;let rem=0,totalVal=0;
+    for(let rr=0;rr<ROWS;rr++) for(let cc=0;cc<COLS;cc++){
+      if(grid[rr][cc]?.type==="prop"&&grid[rr][cc].color===tc){
+        totalVal+=grid[rr][cc].value;
+        cellEls[`${rr}-${cc}`]?.classList.add("pop");grid[rr][cc]=null;rem++;
+      }
+    }
+    bank+=totalVal;
+    cancelBooster(false);
+    setTimeout(()=>{grid=dropFill(grid);rebuildGrid();updateHeader();updateBoosterUI();
+      addPop(`+${fmt(totalVal)}`,195,300,"");
+      showToast("🗑️ Forced Deal!",`${rem} ${COLORS[tc].label} removed · +${fmt(totalVal)} banked!`);
+      autoReshuffleIfNeeded();
+      if(bank>=LEVELS[level].goal) setTimeout(showWin,450);
+    },220);
+    return;
+  }
+  if(activeBooster==="break"){
+    if(card.type!=="prop"){showToast("Property cards only","Can't select specials");return;}
+    if(dbPicks.length>=4){showToast("Max 4 cards","Select exactly 4 for Deal Breaker");return;}
+    const idx=dbPicks.findIndex(p=>p.row===r&&p.col===c);
+    if(idx>=0){dbPicks.splice(idx,1);cellEls[`${r}-${c}`]?.classList.remove("dbsel");}
+    else{dbPicks.push({row:r,col:c});cellEls[`${r}-${c}`]?.classList.add("dbsel");}
+    const curVal=dbPicks.reduce((s,{row,col})=>s+grid[row][col].value,0);
+    $("db-go").disabled=dbPicks.length!==4;
+    $("b-hint-txt").textContent=`⚡ ${dbPicks.length}/4 cards selected — value: ${fmt(curVal)}`;
+  }
+}
+function confirmDealBreaker(){
+  if(dbPicks.length!==4) return;
+  wallet-=BCOSTS.break;
+  let earn=0;dbPicks.forEach(({row,col})=>earn+=grid[row][col].value);
+  bank+=earn;totalSets++;sfxConnect(2);
+  const mp=cellCenter(dbPicks[1].row,dbPicks[1].col);
+  if(mp){const wr=$("grid-wrap").getBoundingClientRect(),rr=$("root").getBoundingClientRect();
+    addPop(`+${fmt(earn)}`,wr.left-rr.left+mp.x,wr.top-rr.top+mp.y,"");}
+  dbPicks.forEach(({row,col})=>{cellEls[`${row}-${col}`]?.classList.add("pop");grid[row][col]=null;});
+  const picks=[...dbPicks];cancelBooster(false);
+  setTimeout(()=>{grid=dropFill(grid);rebuildGrid();updateHeader();updateBoosterUI();
+    showToast("⚡ Deal Breaker!",`4 cards cashed — ${fmt(earn)} banked!`);
+    if(bank>=LEVELS[level].goal) setTimeout(showWin,450);
+    else if(movesEnabled&&moves<=0) setTimeout(showLose,450);
+    else autoReshuffleIfNeeded();
+  },220);
+}
+
+// ══════════════════════════════════════════════════════════════════
+// HINT SYSTEM
+// ══════════════════════════════════════════════════════════════════
+let hintIdleTimer=null;   // fires after 10s inactivity → show hint
+let hintHideTimer=null;   // fires after 3s showing → hide hint
+let hintRepeatTimer=null; // fires after 3s hidden (still idle) → show again
+let hintCells=[];         // [{row,col}] currently highlighted
+
+const HINT_IDLE_MS   = 10000; // inactivity before first hint
+const HINT_SHOW_MS   =  3000; // how long hint stays visible
+const HINT_REPEAT_MS =  3000; // gap between repeated hints
+
+// Find a valid group of MIN_CHAIN+ same-color adjacent prop cards
+// Returns array of {row,col} or null
+function findHintGroup(g){
+  // Try each color, pick one with a cluster >= MIN_CHAIN
+  const shuffledColors=[...CK].sort(()=>Math.random()-.5);
+  for(const color of shuffledColors){
+    // BFS — collect all connected components for this color
+    const visited=new Set();
+    for(let r=0;r<ROWS;r++) for(let c=0;c<COLS;c++){
+      const key=`${r}-${c}`;
+      if(visited.has(key)||g[r][c]?.type!=="prop"||g[r][c].color!==color) continue;
+      // BFS from (r,c)
+      const component=[];
+      const queue=[{r,c}]; visited.add(key);
+      while(queue.length){
+        const {r:cr,c:cc}=queue.shift();
+        component.push({row:cr,col:cc});
+        for(let dr=-1;dr<=1;dr++) for(let dc=-1;dc<=1;dc++){
+          if(dr===0&&dc===0) continue;
+          const nr=cr+dr, nc=cc+dc;
+          if(nr<0||nr>=ROWS||nc<0||nc>=COLS) continue;
+          const nk=`${nr}-${nc}`;
+          if(!visited.has(nk)&&g[nr][nc]?.type==="prop"&&g[nr][nc].color===color){
+            visited.add(nk); queue.push({r:nr,c:nc});
+          }
+        }
+      }
+      if(component.length>=MIN_CHAIN){
+        // Return just MIN_CHAIN cells so the hint is tight, not overwhelming
+        return component.slice(0,Math.min(MIN_CHAIN+1, component.length));
+      }
+    }
+  }
+  return null;
+}
+
+function showHint(){
+  if(gameState!=="playing"||dragging||activeBooster) return;
+  clearHint();
+  const group=findHintGroup(grid);
+  if(!group) return;
+  hintCells=group;
+  // Determine color config for the hint label
+  const sampleCard=grid[group[0].row][group[0].col];
+  const cfg=sampleCard?.color?COLORS[sampleCard.color]:null;
+
+  group.forEach(({row,col},i)=>{
+    const el=cellEls[`${row}-${col}`];
+    if(!el) return;
+    el.classList.add("hint");
+    // Add a small "💡 HINT" label on the first card only
+    if(i===0){
+      const lbl=document.createElement("div");
+      lbl.className="hint-label";
+      lbl.textContent="💡 HINT";
+      el.appendChild(lbl);
+    }
+  });
+
+  // Hide hint after HINT_SHOW_MS, then schedule repeat if still idle
+  hintHideTimer=setTimeout(()=>{
+    clearHint();
+    // If player still hasn't acted, show again after HINT_REPEAT_MS
+    hintRepeatTimer=setTimeout(()=>{
+      if(gameState==="playing"&&!dragging&&!activeBooster) showHint();
+    }, HINT_REPEAT_MS);
+  }, HINT_SHOW_MS);
+}
+
+function clearHint(){
+  if(hintHideTimer){clearTimeout(hintHideTimer);hintHideTimer=null;}
+  if(hintRepeatTimer){clearTimeout(hintRepeatTimer);hintRepeatTimer=null;}
+  hintCells.forEach(({row,col})=>{
+    const el=cellEls[`${row}-${col}`];
+    if(!el) return;
+    el.classList.remove("hint");
+    const lbl=el.querySelector(".hint-label");if(lbl) lbl.remove();
+  });
+  hintCells=[];
+}
+
+// Reset the idle timer — call this on every player action
+function resetHintTimer(){
+  clearHint();
+  if(hintIdleTimer){clearTimeout(hintIdleTimer);hintIdleTimer=null;}
+  if(gameState!=="playing") return;
+  hintIdleTimer=setTimeout(showHint, HINT_IDLE_MS);
+}
+
+// Stop all hint timers (when leaving playing state)
+function stopHintSystem(){
+  clearHint();
+  if(hintIdleTimer){clearTimeout(hintIdleTimer);hintIdleTimer=null;}
+}
+
+// ══════════════════════════════════════════════════════════════════
+// TOAST & POPS
+// ══════════════════════════════════════════════════════════════════
+let toastT=null;
+function showToast(main,sub,cls=""){
+  const old=document.querySelector(".tw");if(old)old.remove();
+  if(toastT)clearTimeout(toastT);
+  const tw=document.createElement("div");tw.className="tw";
+  tw.innerHTML=`<div class="toast ${cls}">${main}</div>${sub?`<div class="tsub">${sub}</div>`:""}`;
+  $("root").appendChild(tw);
+  toastT=setTimeout(()=>tw.remove(),1550);
+}
+function addPop(text,x,y,cls){
+  const el=document.createElement("div");el.className="fpop"+(cls?" "+cls:"");
+  el.textContent=text;el.style.left=x+"px";el.style.top=y+"px";
+  $("root").appendChild(el);setTimeout(()=>el.remove(),950);
+}
+
+// ══════════════════════════════════════════════════════════════════
+// OVERLAYS
+// ══════════════════════════════════════════════════════════════════
+function showOv(html){const o=$("ov");o.innerHTML=html;o.style.display="flex";}
+function hideOv(){$("ov").style.display="none";}
+
+function showStart(){
+  gameState="start";stopBGM();stopHintSystem();
+  showOv(`
+    <div class="ov-deco">🏦</div>
+    <div class="ov-title">Property<br>Connect</div>
+    <div class="ov-sub">Connect same-color properties to fill your bank.<br>Reach <strong>${fmt(LEVELS[0].goal)}</strong> to win Level 1!</div>
+    <div class="rule-grid">
+      <div class="rc"><div class="ri">✏️</div><div class="rt">Draw & Connect</div><div class="rd">Drag same-color cards diagonals OK. Min 3 props per set.</div></div>
+      <div class="rc"><div class="ri">🔗</div><div class="rt">Chain Bonus</div><div class="rd">5+=×1.5 · 7+=×2 · 10+=×3 cash!</div></div>
+      <div class="rc"><div class="ri">🚀</div><div class="rt">Pass Go</div><div class="rd">Include in chain → +2 extra moves!</div></div>
+      <div class="rc"><div class="ri">💰</div><div class="rt">Rent Card</div><div class="rd">Include in chain → ×2 cash earned!</div></div>
+      <div class="rc"><div class="ri">🔄</div><div class="rt">Sly Deal ($300)</div><div class="rd">Swap any 2 cards on board.</div></div>
+      <div class="rc"><div class="ri">🗑️</div><div class="rt">Forced ($1K)</div><div class="rd">Remove all of one color + banks their total value!</div></div>
+      <div class="rc"><div class="ri">⚡</div><div class="rt">Deal Brk ($800)</div><div class="rd">Pick any 4 cards (any color) — their values go straight to the bank!</div></div>
+      <div class="rc"><div class="ri">🔀</div><div class="rt">Reshuffle ($600)</div><div class="rd">Rearrange existing board cards to unlock new connections!</div></div>
+    </div>
+    <button class="btn-p" onclick="startGame(0)">Start Playing</button>
+    <button class="btn-ghost" onclick="showLevelSelect()">Level Select</button>`);
+}
+
+function showWin(){
+  gameState="win";completedLevels.add(level);sfxWin();stopHintSystem();simStop(true);simBarUpdate();
+  const ml=movesEnabled?`<br>Moves left: <span class="grn">${moves}</span>`:"";
+  const nl=level<LEVELS.length-1?`<br>Next: <strong>${fmt(LEVELS[level+1].goal)}</strong>`:"";
+  const nLvl=level<LEVELS.length-1?level+1:0;
+  const btnL=level<LEVELS.length-1?"Next Level →":"Play Again 🏆";
+  showOv(`
+    <div class="ov-deco">🏆</div>
+    <div class="ov-title">LEVEL ${level+1}<br>COMPLETE!</div>
+    <div class="ov-sub">Bank: <strong>${fmt(bank)}</strong> · Sets: <strong>${totalSets}</strong>${ml}${nl}</div>
+    <div class="wallet-note">💳 ${fmt(bank)} transferred to your wallet!</div>
+    <button class="btn-p" onclick="nextLevel(${nLvl})">${btnL}</button>
+    <button class="btn-ghost" onclick="showLevelSelect()">Level Select</button>`);
+}
+
+const MOVES_COST_5=2000, MOVES_COST_10=3500;
+function showLose(){
+  gameState="lose";sfxLose();stopHintSystem();simStop(true);simBarUpdate();
+  showBuyMoves();
+}
+function showBuyMoves(){
+  const shortfall=LEVELS[level].goal-bank;
+  const can5=wallet>=MOVES_COST_5, can10=wallet>=MOVES_COST_10;
+  const b5=can5?`<button class="btn-p" style="font-size:13px;padding:9px 20px" onclick="buyMoves(5)">+5 Moves · ${fmt(MOVES_COST_5)}</button>`:`<button class="btn-p" style="font-size:13px;padding:9px 20px;opacity:.35;cursor:not-allowed">+5 Moves · ${fmt(MOVES_COST_5)} (insufficient)</button>`;
+  const b10=can10?`<button class="btn-p" style="font-size:13px;padding:9px 20px;background:linear-gradient(135deg,#388E3C,#66BB6A)" onclick="buyMoves(10)">+10 Moves · ${fmt(MOVES_COST_10)} 🔥</button>`:`<button class="btn-p" style="font-size:13px;padding:9px 20px;opacity:.35;background:linear-gradient(135deg,#388E3C,#66BB6A);cursor:not-allowed">+10 Moves · ${fmt(MOVES_COST_10)} (insufficient)</button>`;
+  showOv(`
+    <div class="ov-deco">📉</div>
+    <div class="ov-title red">OUT OF<br>MOVES!</div>
+    <div class="ov-sub">Banked <strong>${fmt(bank)}</strong> · Need <strong>${fmt(LEVELS[level].goal)}</strong><br>Short by <span class="red">${fmt(shortfall)}</span></div>
+    <div class="wallet-note">💳 Wallet: ${fmt(wallet)}</div>
+    ${b5}
+    ${b10}
+    <button class="btn-ghost" onclick="startGame(${level},true)">Try Again (free)</button>
+    <button class="btn-ghost" onclick="showLevelSelect()">Level Select</button>`);
+}
+function buyMoves(n){
+  const cost=n===5?MOVES_COST_5:MOVES_COST_10;
+  if(wallet<cost){showToast("Not enough!",`Need ${fmt(cost)} in wallet`);return;}
+  wallet-=cost; moves=n; movesEnabled=true; gameState="playing";
+  hideOv(); updateMovesUI(); updateHeader(); updateBoosterUI();
+  resetHintTimer();
+  showToast(`+${n} Moves!`,`${fmt(cost)} spent from wallet`,"gt");
+}
+
+function showLevelSelect(){
+  const prev=gameState;gameState="levelselect";stopHintSystem();
+  let cards="";
+  LEVELS.forEach((lv,i)=>{
+    const done=completedLevels.has(i)?'<span class="lvl-badge-done">✅</span>':"";
+    const cur=i===level&&prev==="playing"?'current':'';
+    const diffMap={easy:"🟢 Easy",medium:"🟡 Medium",hard:"🔴 Hard",vhard:"💀 V.Hard"};
+    const diffCls={easy:"diff-easy",medium:"diff-med",hard:"diff-hard",vhard:"diff-vhard"};
+    const diffLabel=diffMap[lv.diff]||"";const diffC=diffCls[lv.diff]||"";
+    cards+=`<div class="lvl-card ${cur}" onclick="selectLevel(${i})">
+      ${done}
+      <span class="difficulty ${diffC}">${diffLabel}</span>
+      <div class="lvl-num">${i+1}</div>
+      <div class="lvl-name">${lv.label}</div>
+      <div class="lvl-goal">${fmt(lv.goal)}</div>
+      <div class="lvl-moves">🎯 ${lv.moves} moves</div>
+    </div>`;
+  });
+  showOv(`
+    <div class="ov-deco" style="animation:none">🗺️</div>
+    <div class="ov-title" style="font-size:26px">Level Select</div>
+    <div class="lvl-grid">${cards}</div>
+    ${prev==="playing"?`<button class="btn-ghost" onclick="resumeGame()">Resume Game</button>`:`<button class="btn-ghost" onclick="showStart()">← Back</button>`}`);
+}
+
+function selectLevel(lvl){
+  startGame(lvl,true);
+}
+function resumeGame(){
+  gameState="playing";hideOv();updateMovesUI();startBGM();resetHintTimer();simBarUpdate();
+}
+function nextLevel(lvl){
+  wallet+=bank;startGame(lvl,true);
+}
+function restartLevel(){
+  if(gameState==="playing"||gameState==="lose"){
+    if(gameState==="playing"){
+      // ask with a quick confirm via the overlay approach
+      const prev={bank,wallet,totalSets,moves,level,grid,gameState};
+      showOv(`
+        <div class="ov-deco" style="animation:none">🔁</div>
+        <div class="ov-title" style="font-size:26px">Restart Level?</div>
+        <div class="ov-sub">Your current progress will be lost.</div>
+        <button class="btn-p" onclick="startGame(${level},true)">Yes, Restart</button>
+        <button class="btn-ghost" onclick="resumeGame()">Cancel</button>`);
+      gameState="pause";
+    } else {
+      startGame(level,true);
+    }
+  }
+}
+
+// ══════════════════════════════════════════════════════════════════
+// START GAME
+// ══════════════════════════════════════════════════════════════════
+function startGame(lvl,keepWallet=false){
+  level=lvl;bank=0;totalSets=0;chain=[];dragging=false;
+  moves=LEVELS[level].moves;
+  if(!keepWallet)wallet=10000;
+  grid=makeGridWithConnections();gameState="playing";
+  cancelBooster(false);hideOv();
+  buildGrid();buildLegend();updateHeader();updateToggleUI();updateBoosterUI();updateChainUI();
+  startBGM();
+  resetHintTimer();
+  simStop(true);simBarUpdate();
+}
+
+// ══════════════════════════════════════════════════════════════════
+// EDIT MOVES PANEL
+// ══════════════════════════════════════════════════════════════════
+function showEditPanel(){
+  const diffMap={easy:"🟢 Easy",medium:"🟡 Medium",hard:"🔴 Hard",vhard:"💀 V.Hard"};
+  const diffCls={easy:"diff-easy",medium:"diff-med",hard:"diff-hard",vhard:"diff-vhard"};
+  const body=$("ep-body");body.innerHTML="";
+  LEVELS.forEach((lv,i)=>{
+    const row=document.createElement("div");row.className="ep-row";
+    row.innerHTML=`
+      <div class="ep-lvl-name">
+        <div class="ep-n">Level ${i+1}: ${lv.label}</div>
+        <div class="ep-sub">Goal: ${fmt(lv.goal)} · <span class="difficulty ${diffCls[lv.diff]||''}">${diffMap[lv.diff]||''}</span></div>
+      </div>
+      <div class="ep-ctrl">
+        <div class="ep-minus" onclick="editMoves(${i},-1)">−</div>
+        <span class="ep-val" id="ep-mv-${i}">${lv.moves}</span>
+        <div class="ep-plus"  onclick="editMoves(${i},+1)">+</div>
+      </div>`;
+    body.appendChild(row);
+  });
+  $("edit-panel").style.display="flex";
+}
+function editMoves(idx,delta){
+  LEVELS[idx].moves=Math.max(5,Math.min(99,LEVELS[idx].moves+delta));
+  $(`ep-mv-${idx}`).textContent=LEVELS[idx].moves;
+  if(idx===level){moves=LEVELS[level].moves;updateMovesUI();}
+}
+function closeEditPanel(){
+  $("edit-panel").style.display="none";
+}
+
+
+// ══════════════════════════════════════════════════════════════════
+// SIMULATOR ENGINE
+// ══════════════════════════════════════════════════════════════════
+let simRunning=false, simPaused=false, simTimer=null;
+const SIM_SPEEDS={1:2000,2:1200,3:700,4:350,5:150}; // ms per move
+let simCurrentSpeed=700;
+
+function simSpeedChanged(){
+  const v=parseInt($("sim-speed").value);
+  simCurrentSpeed=SIM_SPEEDS[v]||700;
+  const lbls={1:"Slow",2:"Slower",3:"Normal",4:"Fast",5:"Turbo"};
+  $("sim-speed-lbl").textContent=lbls[v]||"Normal";
+}
+
+// Show/hide the sim bar only during gameplay
+function simBarUpdate(){
+  const bar=$("sim-bar");
+  if(gameState==="playing"){
+    bar.classList.remove("hidden");
+  } else {
+    bar.classList.add("hidden");
+    simStop(true);
+  }
+}
+
+// ── Find the best chain the AI can make on a given grid state ──
+function simFindBestChain(g){
+  let bestEarn=0, bestChain=[];
+  for(const color of CK){
+    for(let sr=0;sr<ROWS;sr++) for(let sc=0;sc<COLS;sc++){
+      const cell=g[sr][sc];
+      if(!cell||cell.type!=="prop"||cell.color!==color) continue;
+      const vis=new Set([`${sr}-${sc}`]);
+      const queue=[{r:sr,c:sc}];
+      const comp=[];
+      while(queue.length){
+        const {r,c}=queue.shift(); comp.push({r,c});
+        for(let dr=-1;dr<=1;dr++) for(let dc=-1;dc<=1;dc++){
+          if(dr===0&&dc===0) continue;
+          const nr=r+dr,nc=c+dc,nk=`${nr}-${nc}`;
+          if(nr<0||nr>=ROWS||nc<0||nc>=COLS) continue;
+          if(vis.has(nk)) continue;
+          const nc2=g[nr][nc];
+          if(nc2&&nc2.type==="prop"&&nc2.color===color){vis.add(nk);queue.push({r:nr,c:nc});}
+        }
+      }
+      if(comp.length<MIN_CHAIN) continue;
+      // Include adjacent rent cards
+      const rnt=[],cs=new Set(comp.map(x=>`${x.r}-${x.c}`));
+      for(const {r,c} of comp){
+        for(let dr=-1;dr<=1;dr++) for(let dc=-1;dc<=1;dc++){
+          if(dr===0&&dc===0) continue;
+          const nr=r+dr,nc=c+dc,nk=`${nr}-${nc}`;
+          if(!cs.has(nk)&&nr>=0&&nr<ROWS&&nc>=0&&nc<COLS){
+            const nc2=g[nr][nc];
+            if(nc2&&nc2.type==="rnt"){rnt.push({r:nr,c:nc});cs.add(nk);}
+          }
+        }
+      }
+      let v=0; comp.forEach(({r,c})=>v+=g[r][c].value);
+      const mult=getMult(comp.length);
+      const rntC=rnt.length;
+      const earn=Math.floor(v*mult)*Math.pow(2,rntC);
+      if(earn>bestEarn){bestEarn=earn;bestChain=[...comp,...rnt];}
+    }
+  }
+  return{chain:bestChain,earn:bestEarn};
+}
+
+// ── Highlight chain cells visually, draw SVG lines, then commit ──
+function simHighlightChain(chainCells, earn, onDone){
+  // Temporarily set chain state so drawLines works
+  chain=chainCells.map(x=>({row:x.r,col:x.c}));
+  chainCells.forEach(({r,c})=>{
+    const el=cellEls[`${r}-${c}`];
+    if(el) el.classList.add("sim-card-hi","in-ch");
+  });
+  updateChainUI();
+  drawLines();
+  // Show move banner
+  const mid=chainCells[Math.floor(chainCells.length/2)];
+  const mp=cellCenter(mid.r,mid.c);
+  const gwRect=$("grid-wrap").getBoundingClientRect();
+  const rootRect=$("root").getBoundingClientRect();
+  const banner=document.createElement("div");
+  banner.className="sim-move-banner";
+  banner.textContent=`AI: ${chainCells.length} cards • +${fmt(earn)}`;
+  $("root").appendChild(banner);
+  const SHOW_MS=Math.max(simCurrentSpeed*0.55,120);
+  setTimeout(()=>{
+    banner.remove();
+    chainCells.forEach(({r,c})=>{
+      const el=cellEls[`${r}-${c}`];
+      if(el) el.classList.remove("sim-card-hi","in-ch");
+    });
+    chain=[];
+    onDone();
+  }, SHOW_MS);
+}
+
+// ── Directly execute an AI move (bypasses drag system) ──
+function simExecuteMove(chainCells, earn){
+  if(!simRunning) return;
+  const pc=chainCells.filter(({r,c})=>grid[r][c]&&grid[r][c].type==="prop").length;
+  if(pc<MIN_CHAIN) return;
+  const mult=getMult(pc);
+  const pgCount=chainCells.filter(({r,c})=>grid[r][c]&&grid[r][c].type==="pg").length;
+  const rntCount=chainCells.filter(({r,c})=>grid[r][c]&&grid[r][c].type==="rnt").length;
+
+  // Pop animation on cells
+  chainCells.forEach(({r,c})=>{const el=cellEls[`${r}-${c}`];if(el)el.classList.add("pop");});
+  chain=[];updateChainUI();drawLines();
+  sfxConnect(mult);
+
+  setTimeout(()=>{
+    if(!simRunning&&!simPaused) return; // stop was called during animation
+    // Remove cards and drop
+    chainCells.forEach(({r,c})=>{grid[r][c]=null;});
+    grid=dropFill(grid);
+    bank+=earn; totalSets++;
+    if(movesEnabled) moves=Math.max(0,moves-1);
+    if(pgCount>0&&movesEnabled){moves+=pgCount*2;sfxPassGo();}
+    if(rntCount>0) sfxRent();
+    else if(mult>=1.5) sfxConnect(mult);
+
+    rebuildGrid(); updateHeader(); updateMovesUI();
+
+    const movesLeft=movesEnabled?moves:"∞";
+    $("sim-status").textContent=`Bank: ${fmt(bank)} · Moves left: ${movesLeft}`;
+
+    // Check win/lose
+    if(bank>=LEVELS[level].goal){
+      simStop(true);
+      setTimeout(showWin,450);
+      return;
+    }
+    if(movesEnabled&&moves<=0){
+      simStop(true);
+      setTimeout(showLose,450);
+      return;
+    }
+
+    // Handle deadlock
+    if(!hasValidConnection(grid)){
+      grid=reshuffleExistingCards();
+      rebuildGrid();
+      $("sim-status").textContent="Reshuffled cards...";
+    }
+
+    simTimer=setTimeout(simDoMove, simCurrentSpeed);
+  }, 220);
+}
+
+// ── Execute one AI move ──
+function simDoMove(){
+  if(!simRunning||simPaused||gameState!=="playing") return;
+  if(movesEnabled&&moves<=0){simStop(true);setTimeout(showLose,450);return;}
+  if(bank>=LEVELS[level].goal){simStop(true);setTimeout(showWin,450);return;}
+
+  if(!hasValidConnection(grid)){
+    grid=reshuffleExistingCards();
+    rebuildGrid();
+    $("sim-status").textContent="Reshuffled cards...";
+    simTimer=setTimeout(simDoMove,simCurrentSpeed);
+    return;
+  }
+
+  const {chain:bestChain,earn}=simFindBestChain(grid);
+  if(!bestChain||bestChain.length===0){simStop();return;}
+
+  // Highlight the chosen chain, then execute it
+  simHighlightChain(bestChain, earn, ()=>{
+    if(!simRunning) return;
+    simExecuteMove(bestChain, earn);
+  });
+}
+
+function simStart(){
+  if(gameState!=="playing") return;
+  simRunning=true; simPaused=false;
+  stopHintSystem();
+  cancelBooster(false);
+
+  $("sim-start-btn").classList.add("hidden");
+  $("sim-pause-btn").classList.remove("hidden");
+  $("sim-stop-btn").classList.remove("hidden");
+  $("sim-take-btn").classList.remove("hidden");
+  $("sim-status").textContent="AI playing...";
+
+  simDoMove();
+}
+
+function simTogglePause(){
+  if(!simRunning) return;
+  simPaused=!simPaused;
+  if(simPaused){
+    if(simTimer){clearTimeout(simTimer);simTimer=null;}
+    $("sim-pause-btn").textContent="▶ Resume";
+    $("sim-pause-btn").classList.remove("pause");
+    $("sim-pause-btn").classList.add("take");
+    $("sim-status").textContent="Paused — take over anytime";
+  } else {
+    $("sim-pause-btn").textContent="⏸ Pause";
+    $("sim-pause-btn").classList.add("pause");
+    $("sim-pause-btn").classList.remove("take");
+    $("sim-status").textContent="AI playing...";
+    simDoMove();
+  }
+}
+
+function simStop(silent=false){
+  simRunning=false; simPaused=false;
+  if(simTimer){clearTimeout(simTimer);simTimer=null;}
+  chain=[]; updateChainUI(); drawLines();
+  // Clear any lingering highlight
+  for(let r=0;r<ROWS;r++) for(let c=0;c<COLS;c++){
+    const el=cellEls[`${r}-${c}`];
+    if(el) el.classList.remove("sim-card-hi","in-ch","head");
+  }
+  $("sim-start-btn").classList.remove("hidden");
+  $("sim-pause-btn").classList.add("hidden");
+  $("sim-stop-btn").classList.add("hidden");
+  $("sim-take-btn").classList.add("hidden");
+  $("sim-pause-btn").textContent="⏸ Pause";
+  $("sim-pause-btn").classList.add("pause");
+  $("sim-pause-btn").classList.remove("take");
+  $("sim-status").textContent="AI ready";
+  if(!silent) resetHintTimer();
+}
+
+function simTakeOver(){
+  simStop();
+  showToast("🎮 Your Turn!","AI stopped — you're in control","bt");
+  resetHintTimer();
+}
+
+// ══════════════════════════════════════════════════════════════════
+// TOGGLE EVENTS
+// ══════════════════════════════════════════════════════════════════
+$("tgl-sw").addEventListener("click",()=>{
+  if(gameState!=="playing") return;
+  movesEnabled=!movesEnabled;
+  if(movesEnabled) moves=LEVELS[level].moves;
+  updateToggleUI();
+});
+document.addEventListener("mousemove",e=>{
+  if(!dragging||activeBooster) return;
+  const cell=getCellAt(e.clientX,e.clientY);if(cell)extendChain(cell.row,cell.col);
+});
+document.addEventListener("mouseup",()=>{if(dragging)commitChain();});
+document.addEventListener("touchmove",e=>{
+  if(!dragging||activeBooster) return;
+  e.preventDefault();
+  const t=e.touches[0],cell=getCellAt(t.clientX,t.clientY);if(cell)extendChain(cell.row,cell.col);
+},{passive:false});
+document.addEventListener("touchend",()=>{if(dragging)commitChain();});
+document.addEventListener("touchcancel",()=>{if(dragging){dragging=false;chain=[];updateChainUI();}});
+
+// ══════════════════════════════════════════════════════════════════
+// INIT
+// ══════════════════════════════════════════════════════════════════
+showStart();
+</script>
+</body>
+</html>
